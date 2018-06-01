@@ -690,8 +690,10 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
         String rut = tf_searchRut.getText();
         Persona p = banco.isPersonaOnBanco(rut);
-        if(p != null)
-            banco.eliminarPersona(cuentaAdministrador,p.getRut());
+        if(p != null) {
+            banco.eliminarPersona(cuentaAdministrador, p.getRut());
+            generateDialog("Operacion Exitosa", p.getNombres() + " " + p.getApellidos() + " ha sido eliminado");
+        }
         else
             generateDialog("Error", "Usuario no encontrado con el rut indicado");
 
