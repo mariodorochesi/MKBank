@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Graphics.ControllerModificarUsuario">
+   <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="200.0" prefWidth="200.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="500.0" />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+   </rowConstraints>
+   <children>
+      <AnchorPane maxWidth="200.0" minWidth="200.0" prefHeight="275.0" prefWidth="200.0" style="-fx-background-color: #334961;">
+         <children>
+            <JFXButton minHeight="50.0" minWidth="200.0" onAction="#goCrearUsuario" text="Crear cuenta" textAlignment="CENTER" textFill="#8c9dab">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </JFXButton>
+            <JFXButton layoutY="100.0" minHeight="50.0" minWidth="200.0" ripplerFill="#1f83da" text="Generar Reporte" textAlignment="CENTER" textFill="#8c9dab">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </JFXButton>
+            <JFXButton layoutX="-1.0" layoutY="135.0" minHeight="50.0" minWidth="200.0" ripplerFill="#c30808" text="Salir" textAlignment="CENTER" textFill="#a86b6b" AnchorPane.bottomAnchor="0.0">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </JFXButton>
+            <JFXButton layoutY="50.0" minHeight="50.0" minWidth="200.0" ripplerFill="#1f83da" text="Modificar cuenta" textAlignment="CENTER" textFill="#8c9dab">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </JFXButton>
+         </children>
+      </AnchorPane>
+      <AnchorPane GridPane.columnIndex="1" />
+   </children>
+</GridPane>
