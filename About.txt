@@ -36,4 +36,4 @@ Cuenta Usuario y Ejecutivo: 19267473-5 password: braulio123
 Tambien puede crear su propia cuenta usando la pestaña de Nuevo usuario, una vez creado el usuario
 se puede loguear utilizando el rut como usuario y su rut sin guión si numero verificador.
 
-FIN
+FIN ABOUT
