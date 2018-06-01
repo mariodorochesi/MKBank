@@ -12,5 +12,6 @@ MKBank fue diseñada tomando en consideración a cuatro actores fundamentales en
 
 Para cada uno de ellos, se diseñó una ventana con las cosas que realmente necesita cada uno, intentando generar una experiencia de usuario distinta.
 
+![Alt text](https://github.com/mariodorochesi/MKBank/blob/master/img/modificarusuarionuevo.JPG?raw=true "Ventana Modificar Usuario")
 
 En desarrollo..
