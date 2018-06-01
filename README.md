@@ -14,4 +14,11 @@ Para cada uno de ellos, se diseñó una ventana con las cosas que realmente nece
 
 ![Alt text](https://github.com/mariodorochesi/MKBank/blob/master/img/modificarusuarionuevo.JPG?raw=true "Ventana Modificar Usuario")
 
+<p align="center">Ejemplo Ventana Modificar Usuairo</p>
+
+## Autores
+* Mario Javier Dorochesi Ollino
+* Braulio Andres Lobo Madariaga
+* Katrina Elephteria Stamulis Vergara
+
 En desarrollo..
