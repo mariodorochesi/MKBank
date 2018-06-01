@@ -43,6 +43,8 @@ public class Saver {
         conexionSQL.editarPersonaSQL(persona);
     }
 
+    public void eliminarPersona(String rut){conexionSQL.eliminarPersona(rut);}
+
     public void eliminarCuentaBancariaSQL(long identificador){
         conexionSQL.eliminarCuentaBancariaSQL(identificador);
     }

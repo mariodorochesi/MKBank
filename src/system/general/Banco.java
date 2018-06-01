@@ -1086,6 +1086,7 @@ public class Banco implements Reportable {
     public boolean eliminarPersonaBanco(Persona personaEliminar){
         System.out.println("Eliminando a la Persona " + personaEliminar.getNombres() +
                 " " + personaEliminar.getApellidos() + " del mapa de Personas");
+        saver.eliminarPersona(personaEliminar.getRut());
         mapaPersonas.eliminarPersona(personaEliminar.getRut());
         return true;
     }

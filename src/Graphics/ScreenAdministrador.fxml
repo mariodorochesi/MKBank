@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Graphics.ControllerAdministrador">
+<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Graphics.ControllerAdministrador">
    <children>
       <GridPane prefHeight="540.0" prefWidth="960.0">
          <columnConstraints>
@@ -196,8 +196,13 @@
                      </font>
                   </JFXButton>
                   <JFXButton buttonType="RAISED" layoutX="574.0" layoutY="20.0" onAction="#modificarUsuario" prefHeight="27.0" prefWidth="127.0" style="-fx-background-color: #6cee7d;" text="Guardar cambios" AnchorPane.rightAnchor="59.0" />
-                  <JFXToggleButton fx:id="tb_permisosUsuario" layoutX="578.0" layoutY="65.0" text="Usuario" AnchorPane.rightAnchor="62.0" />
-                  <JFXToggleButton fx:id="tb_permisosEjecutivo" layoutX="578.0" layoutY="108.0" onAction="#switchPermisosEjecutivo" text="Ejecutivo" AnchorPane.rightAnchor="54.0" />
+                  <JFXToggleButton fx:id="tb_permisosUsuario" layoutX="592.0" layoutY="59.0" text="Usuario" AnchorPane.rightAnchor="57.0" />
+                  <JFXToggleButton fx:id="tb_permisosEjecutivo" layoutX="592.0" layoutY="96.0" onAction="#switchPermisosEjecutivo" text="Ejecutivo" AnchorPane.rightAnchor="50.0" />
+                  <JFXButton fx:id="b_eliminarPersona" buttonType="RAISED" layoutX="574.0" layoutY="152.0" onAction="#eliminarPersona" style="-fx-background-color: EE7D6C;" text="Eliminar Persona" textFill="#5c0f0f">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </JFXButton>
                </children>
             </AnchorPane>
             <AnchorPane fx:id="ap_Report" visible="false" GridPane.columnIndex="1">

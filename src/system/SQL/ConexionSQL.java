@@ -354,4 +354,12 @@ public class ConexionSQL {
         }catch(Exception ignored){}
     }
 
+    public void eliminarPersona(String rut){
+        try{
+            myStmt.executeUpdate("DELETE FROM personas\n" +
+                    "WHERE rut = '" + rut + "'");
+        }catch(Exception ignored){}
+    }
+
+
 }

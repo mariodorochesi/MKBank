@@ -109,6 +109,8 @@ public class ControllerAdministrador extends AbstractController implements Initi
     private JFXButton b_nuevaCuentaBancaria;
     @FXML
     private JFXButton b_eliminarCuentaBancaria;
+    @FXML
+    private JFXButton b_eliminarPersona;
 
     @FXML
     private JFXDatePicker dp_fechaNacimiento1;
@@ -682,6 +684,17 @@ public class ControllerAdministrador extends AbstractController implements Initi
         updateTreeViewUserAccounts(usuario);
         updateComboBoxCuentasBancarias(usuario);
         generateDialog("Mensaje",banco.getLastError());
+    }
+
+    public void eliminarPersona(ActionEvent event){
+
+        String rut = tf_searchRut.getText();
+        Persona p = banco.isPersonaOnBanco(rut);
+        if(p != null)
+            banco.eliminarPersona(cuentaAdministrador,p.getRut());
+        else
+            generateDialog("Error", "Usuario no encontrado con el rut indicado");
+
     }
 
     /**
