@@ -17,10 +17,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
-import system.general.Banco;
-import system.general.DineroPorCiudadYClientes;
-import system.general.Persona;
-import system.general.PythonRunner;
+import system.general.*;
 import system.systemAccounts.*;
 
 import java.io.*;
@@ -38,6 +35,8 @@ public class ControllerAdministrador extends AbstractController implements Initi
     private JFXComboBox comboBox_estadoCivil;
     @FXML
     private JFXComboBox comboBox_cuentaBancariaInicial;
+    @FXML
+    private JFXComboBox comboBox_sucursalAsociada;
 
     @FXML
     private JFXTextField tf_nombres;
@@ -78,6 +77,8 @@ public class ControllerAdministrador extends AbstractController implements Initi
     private JFXComboBox comboBox_nuevaCuentaBancaria;
     @FXML
     private JFXComboBox comboBox_cuentaBancariaEliminar;
+    @FXML
+    private JFXComboBox comboBox_sucursalAsociada1;
 
     @FXML
     private JFXTextField tf_searchRut;
@@ -130,6 +131,8 @@ public class ControllerAdministrador extends AbstractController implements Initi
     private JFXButton bmaster_goReport;
     @FXML
     private JFXButton bmaster_goGirar;
+    @FXML
+    private JFXButton bmaster_goAdmSucursales;
 
     @FXML
     private AnchorPane ap_NewUser;
@@ -139,6 +142,8 @@ public class ControllerAdministrador extends AbstractController implements Initi
     private AnchorPane ap_Report;
     @FXML
     private AnchorPane ap_Girar;
+    @FXML
+    private AnchorPane ap_AdmSucursales;
 
     @FXML
     private JFXTreeTableView treeTableView;
@@ -164,6 +169,14 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
     @FXML
     private JFXTreeTableView treeTableViewReporteCiudad;
+
+    // Recursos del administrador de sucursales
+    @FXML
+    private JFXTextField tf_nombreNuevaSucursal;
+    @FXML
+    private JFXTextField tf_direccionNuevaSucursal;
+    @FXML
+    private JFXTreeTableView treeTableViewSucursales;
 
     // Labels necesarios:
     @FXML
@@ -199,6 +212,15 @@ public class ControllerAdministrador extends AbstractController implements Initi
         comboBox_cuentaBancariaInicial.getItems().remove(comboBox_cuentaBancariaInicial.getItems());
         comboBox_cuentaBancariaInicial.getItems().addAll("Cuenta Vista", "Cuenta Corriente", "Cuenta Ahorro");
         comboBox_nuevaCuentaBancaria.getItems().addAll(comboBox_cuentaBancariaInicial.getItems());
+
+        comboBox_sucursalAsociada.getItems().removeAll(comboBox_sucursalAsociada.getItems());
+        comboBox_sucursalAsociada.getItems().addAll(banco.obtenerNombresSucursales());
+
+        comboBox_sucursalAsociada1.getItems().removeAll(comboBox_sucursalAsociada.getItems());
+        comboBox_sucursalAsociada1.getItems().addAll(banco.obtenerNombresSucursales());
+
+        updateSucursalesOnTreeTableView();
+
         reportLines = new ArrayList<>();
         comboBox_cuentaBancariaInicial.setDisable(!cb_permisoUsuario.isSelected());
     }
@@ -223,17 +245,19 @@ public class ControllerAdministrador extends AbstractController implements Initi
         final int mesNacimiento = dp_fechaNacimiento.getValue().getMonthValue();
         final int diaNacimiento = dp_fechaNacimiento.getValue().getDayOfMonth();
         final String genero; if(cb_hombre.isSelected()) genero = "Hombre"; else genero = "Mujer";
+        final String sucursalAsociada = (String) comboBox_sucursalAsociada.getValue();
 
         // Agregamos la persona al sistema
         System.out.println("Agregando a la persona " + nombres);
         banco.agregarPersona(cuentaAdministrador, nombres, apellidos, rut, ciudad, direccion, correo,
-                celular, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero);
+                celular, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursalAsociada);
 
         // Dando permisos de usuarios a la persona y agregando su primera cuenta bancaria
         if(cb_permisoUsuario.isSelected()){
             System.out.println("Agregando Permisos Usuario a" + nombres);
             banco.otorgarPermisosUsuario(rut);
-            banco.agregarCuentaBancaria(cuentaAdministrador, banco.isUsuarioOnBanco(rut), (String) comboBox_cuentaBancariaInicial.getValue());
+            banco.agregarCuentaBancaria(cuentaAdministrador, banco.isUsuarioOnBanco(rut),
+                    (String) comboBox_cuentaBancariaInicial.getValue());
         }
 
         // Dando permisos de ejecutivo a la persona
@@ -242,18 +266,6 @@ public class ControllerAdministrador extends AbstractController implements Initi
             banco.otorgarPermisosSuperiores(Banco.PERMISO_EJECUTIVO, rut);
         }
 
-        //banco.agregarPersona(cuentaAdministrador, nombres);
-
-        /*
-        if(comboBox_tipoCuentaCrear.getValue().equals("Cuenta Usuario") || comboBox_tipoCuentaCrear.getValue().equals("Tipo de Cuenta")) {
-            banco.agregarPersona(cuentaAdministrador, nombres, apellidos, rut, ciudad, direccion, correo,
-                    celular, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero,
-                    (String) comboBox_cuentaBancariaInicial.getValue());
-        }
-        else{
-            banco.agregarPersona(cuentaAdministrador,nombres,apellidos,rut,ciudad,direccion,correo,celular,
-                    nacionalidad,annoNacimiento,mesNacimiento,diaNacimiento,eCivil,genero,(String)comboBox_tipoCuentaCrear.getValue());
-        }*/
 
         generateDialog("Completado", banco.getLastError() + tf_searchRut.getText());
 
@@ -278,6 +290,7 @@ public class ControllerAdministrador extends AbstractController implements Initi
         tf_nacionalidad.clear();
 
         comboBox_estadoCivil.getSelectionModel().clearSelection();
+        comboBox_sucursalAsociada.getSelectionModel().clearSelection();
 
         cb_hombre.setSelected(false);
         cb_mujer.setSelected(false);
@@ -297,6 +310,7 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
         comboBox_estadoCivil1.getSelectionModel().clearSelection();
         comboBox_cuentaBancariaEliminar.getItems().removeAll(comboBox_cuentaBancariaInicial.getItems());
+        comboBox_sucursalAsociada1.getSelectionModel().clearSelection();
 
         dp_fechaNacimiento1.setValue(null);
 
@@ -346,13 +360,14 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_NewUser.setVisible(false);
         ap_Report.setVisible(false);
         ap_Girar.setVisible(false);
+        ap_AdmSucursales.setVisible(false);
 
         // Cambiando colores de los botones laterales
         bmaster_goEditUser.setStyle("-fx-background-color: #345a72;");
         bmaster_goNewUser.setStyle("-fx-background-color: #334961;");
         bmaster_goReport.setStyle("-fx-background-color: #334961;");
         bmaster_goGirar.setStyle("-fx-background-color: #334961;");
-
+        bmaster_goAdmSucursales.setStyle("-fx-background-color: #334961;");
     }
 
     /**
@@ -364,12 +379,14 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_EditUser.setVisible(false);
         ap_Report.setVisible(false);
         ap_Girar.setVisible(false);
+        ap_AdmSucursales.setVisible(false);
 
         // Cambiando colores de los botones laterales
         bmaster_goNewUser.setStyle("-fx-background-color: #345a72;");
         bmaster_goEditUser.setStyle("-fx-background-color: #334961;");
         bmaster_goReport.setStyle("-fx-background-color: #334961;");
         bmaster_goGirar.setStyle("-fx-background-color: #334961;");
+        bmaster_goAdmSucursales.setStyle("-fx-background-color: #334961;");
     }
 
     /**
@@ -382,12 +399,14 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_EditUser.setVisible(false);
         ap_NewUser.setVisible(false);
         ap_Girar.setVisible(false);
+        ap_AdmSucursales.setVisible(false);
 
         // Cambiando colores de los botones laterales
         bmaster_goReport.setStyle("-fx-background-color: #345a72;");
         bmaster_goEditUser.setStyle("-fx-background-color: #334961;");
         bmaster_goNewUser.setStyle("-fx-background-color: #334961;");
         bmaster_goGirar.setStyle("-fx-background-color: #334961;");
+        bmaster_goAdmSucursales.setStyle("-fx-background-color: #334961;");
     }
 
     /**
@@ -399,12 +418,33 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_EditUser.setVisible(false);
         ap_NewUser.setVisible(false);
         ap_Girar.setVisible(true);
+        ap_AdmSucursales.setVisible(false);
 
         // Cambiando colores de los botones laterales
         bmaster_goGirar.setStyle("-fx-background-color: #345a72;");
         bmaster_goEditUser.setStyle("-fx-background-color: #334961;");
         bmaster_goNewUser.setStyle("-fx-background-color: #334961;");
         bmaster_goReport.setStyle("-fx-background-color: #334961;");
+        bmaster_goAdmSucursales.setStyle("-fx-background-color: #334961;");
+    }
+
+    /**
+     * Metodo gatillado al precionar el boton Administrar Sucursales
+     * permitiendo limpiar la pantalla y mostrar la que corresponde.
+     */
+    public void goAdministrarSucursales(ActionEvent event){
+        ap_Report.setVisible(false);
+        ap_EditUser.setVisible(false);
+        ap_NewUser.setVisible(false);
+        ap_Girar.setVisible(false);
+        ap_AdmSucursales.setVisible(true);
+
+        // Cambiando colores de los botones laterales
+        bmaster_goGirar.setStyle("-fx-background-color: #334961;");
+        bmaster_goEditUser.setStyle("-fx-background-color: #334961;");
+        bmaster_goNewUser.setStyle("-fx-background-color: #334961;");
+        bmaster_goReport.setStyle("-fx-background-color: #334961;");
+        bmaster_goAdmSucursales.setStyle("-fx-background-color: #345a72;");
     }
 
     /**
@@ -464,6 +504,7 @@ public class ControllerAdministrador extends AbstractController implements Initi
             final String estadoCivil = persona.getEstadoCivil();
             final LocalDate nacimiento = persona.getFechaNacimiento();
             final String nacionalidad = persona.getNacionalidad();
+            final String sucursalAsociada = persona.getSucursalAsociada();
 
             final boolean hombre = persona.getGenero().equals("Hombre");
 
@@ -481,6 +522,7 @@ public class ControllerAdministrador extends AbstractController implements Initi
             cb_hombre1.setSelected(hombre);
             cb_mujer1.setSelected(!hombre);
             tf_nacionalidad1.setText(nacionalidad.toUpperCase());
+            comboBox_sucursalAsociada1.setValue(sucursalAsociada);
 
             tb_permisosEjecutivo.setSelected(banco.contieneCuentaEjecutivo(rut));
             tb_permisosUsuario.setSelected(banco.contieneCuentaUsuario(rut));
@@ -529,9 +571,10 @@ public class ControllerAdministrador extends AbstractController implements Initi
             final int mesNacimiento = dp_fechaNacimiento1.getValue().getMonthValue();
             final int diaNacimiento = dp_fechaNacimiento1.getValue().getDayOfMonth();
             final String genero; if(cb_hombre1.isSelected()) genero = "Hombre"; else genero = "Mujer";
+            final String sucursal_asociada = (String) comboBox_sucursalAsociada1.getValue();
 
             banco.editarPersona(persona, nombres, apellidos, rut, ciudad, direccion, correo, celular,
-                    nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero);
+                    nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursal_asociada);
         }
         else {
             generateDialog("Error", "permisos insuficientes para modificar datos de "
@@ -564,7 +607,9 @@ public class ControllerAdministrador extends AbstractController implements Initi
         treeTableView.setVisible(visible);
         tf_nacionalidad1.setVisible(visible);
         comboBox_cuentaBancariaEliminar.setVisible(visible);
+        comboBox_sucursalAsociada1.setVisible(visible);
         b_eliminarCuentaBancaria.setVisible(visible);
+        b_eliminarPersona.setVisible(visible);
     }
 
     /**
@@ -934,6 +979,62 @@ public class ControllerAdministrador extends AbstractController implements Initi
             System.out.println("Rebocando permisos de ejecutivo a: " + rutBuscado);
         }
 
+    }
+
+    private void updateSucursalesOnTreeTableView(){
+        ObservableList data = FXCollections.observableArrayList();
+        data.addAll(banco.obtenerSucursalesForTable());
+
+        TreeTableColumn c1 = (TreeTableColumn) treeTableViewSucursales.getColumns().get(0);
+        TreeTableColumn c2 = (TreeTableColumn) treeTableViewSucursales.getColumns().get(1);
+        TreeTableColumn c3 = (TreeTableColumn) treeTableViewSucursales.getColumns().get(2);
+
+        c1.setCellValueFactory(
+                new TreeItemPropertyValueFactory<SucursalTreeTableView, String>("nombre")
+        );
+        c2.setCellValueFactory(
+                new TreeItemPropertyValueFactory<SucursalTreeTableView, String>("direccion")
+        );
+        c3.setCellValueFactory(
+                new TreeItemPropertyValueFactory<SucursalTreeTableView, String>("codigo")
+        );
+
+        TreeItem<SucursalTreeTableView> root = new RecursiveTreeItem<>(data, RecursiveTreeObject::getChildren);
+        treeTableViewSucursales.setRoot(root);
+
+        treeTableViewSucursales.setShowRoot(false);
+
+    }
+
+    public void agregarSucursal(){
+        String nombre = tf_nombreNuevaSucursal.getText();
+        String direccion = tf_direccionNuevaSucursal.getText();
+
+        if(nombre.equals("") || direccion.equals("")){
+            generateDialog("Error", "Primero indique el nombre y la direccion de la sucursal");
+            return;
+        }
+
+        banco.agregarSucursal(nombre, direccion);
+        generateDialog("", banco.getLastError());
+
+        // Actualizando recursos graficos
+        updateSucursalesOnTreeTableView();
+        tf_nombreNuevaSucursal.clear();
+        tf_direccionNuevaSucursal.clear();
+
+    }
+
+    public void eliminarSucursal(){
+        TreeItem<SucursalTreeTableView> selectedItem = (TreeItem<SucursalTreeTableView>) treeTableViewSucursales.getSelectionModel().getSelectedItem();
+        if(selectedItem == null)
+            generateDialog("Error", "Primero seleccione una sucursal para borrar");
+        else {
+            banco.eliminarSucursal(selectedItem.getValue().getNombre());
+            generateDialog("", banco.getLastError());
+        }
+
+        updateSucursalesOnTreeTableView();
     }
 }
 

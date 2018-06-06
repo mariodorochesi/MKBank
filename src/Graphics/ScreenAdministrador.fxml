@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Graphics.ControllerAdministrador">
+<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Graphics.ControllerAdministrador">
    <children>
       <GridPane prefHeight="540.0" prefWidth="960.0">
          <columnConstraints>
@@ -55,6 +55,11 @@
                      </cursor>
                   </JFXButton>
                   <JFXButton fx:id="bmaster_goNewUser" minHeight="50.0" minWidth="200.0" onAction="#goNewUser" ripplerFill="#1f83da" style="-fx-background-color: #345a72;" text="Crear cuenta" textAlignment="CENTER" textFill="#8c9dab">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </JFXButton>
+                  <JFXButton fx:id="bmaster_goAdmSucursales" layoutY="200.0" minHeight="50.0" minWidth="200.0" onAction="#goAdministrarSucursales" ripplerFill="#1f83da" text="Administrar Sucursales" textAlignment="CENTER" textFill="#8c9dab">
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
@@ -117,9 +122,10 @@
                   </JFXTextField>
                   <JFXCheckBox fx:id="cb_permisoEjecutivo" layoutX="10.0" layoutY="275.0" onAction="#switchSexo" text="Ejecutivo" />
                   <JFXCheckBox fx:id="cb_permisoUsuario" layoutX="92.0" layoutY="275.0" onAction="#disableStateComboboxCuentaBancariaInicial" text="Usuario" AnchorPane.leftAnchor="100.0" />
+                  <JFXComboBox fx:id="comboBox_sucursalAsociada" labelFloat="true" layoutX="380.0" layoutY="272.0" promptText="Sucursal Asociada" />
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="ap_EditUser" GridPane.columnIndex="1">
+            <AnchorPane fx:id="ap_EditUser" visible="false" GridPane.columnIndex="1">
                <children>
                   <JFXTextField fx:id="tf_searchRut" labelFloat="true" layoutX="31.0" layoutY="43.0" onKeyPressed="#actionSearchKey" prefHeight="27.0" prefWidth="459.0" promptText="Nombre, rut, correo electronico, ..." style="-fx-background-color: #a8c9ce;" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="291.0" AnchorPane.topAnchor="20.0" />
                   <JFXButton buttonType="RAISED" layoutX="490.0" layoutY="20.0" onAction="#actionSearch" style="-fx-background-color: #96d8ff;" text="Buscar" AnchorPane.rightAnchor="209.0" AnchorPane.topAnchor="20.0" />
@@ -148,12 +154,12 @@
                         <Cursor fx:constant="TEXT" />
                      </cursor>
                   </JFXTextField>
-                  <JFXTextField fx:id="tf_correo1" focusColor="#a67a51" labelFloat="true" layoutX="252.0" layoutY="161.0" prefHeight="27.0" prefWidth="258.0" promptText="Correo Electronico" unFocusColor="#838383" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="160.0">
+                  <JFXTextField fx:id="tf_correo1" focusColor="#a67a51" labelFloat="true" layoutX="252.0" layoutY="161.0" prefHeight="27.0" prefWidth="258.0" promptText="Correo Electronico" unFocusColor="#838383" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="160.0">
                      <cursor>
                         <Cursor fx:constant="TEXT" />
                      </cursor>
                   </JFXTextField>
-                  <JFXTextField fx:id="tf_direccion1" focusColor="#a67a51" labelFloat="true" layoutX="272.0" layoutY="211.0" prefHeight="27.0" prefWidth="500.0" promptText="Direccion" unFocusColor="#838383" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="210.0">
+                  <JFXTextField fx:id="tf_direccion1" focusColor="#a67a51" labelFloat="true" layoutX="272.0" layoutY="211.0" prefHeight="27.0" prefWidth="500.0" promptText="Direccion" unFocusColor="#838383" AnchorPane.leftAnchor="230.0" AnchorPane.rightAnchor="190.0" AnchorPane.topAnchor="210.0">
                      <cursor>
                         <Cursor fx:constant="TEXT" />
                      </cursor>
@@ -172,7 +178,7 @@
                         <Font name="System Bold" size="13.0" />
                      </font>
                   </JFXButton>
-                  <JFXDatePicker fx:id="dp_fechaNacimiento1" editable="false" layoutX="10.0" layoutY="261.0" promptText="Fecha de nacimiento" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="260.0" />
+                  <JFXDatePicker fx:id="dp_fechaNacimiento1" layoutX="10.0" layoutY="261.0" promptText="Fecha de nacimiento" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="260.0" />
                   <JFXTextField fx:id="tf_nacionalidad1" focusColor="#a67a51" labelFloat="true" layoutX="540.0" layoutY="262.0" prefHeight="27.0" prefWidth="210.0" promptText="Nacionalidad" unFocusColor="#838383" AnchorPane.leftAnchor="540.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="260.0">
                      <cursor>
                         <Cursor fx:constant="TEXT" />
@@ -189,7 +195,7 @@
                         <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </JFXTreeTableView>
-                  <JFXComboBox fx:id="comboBox_cuentaBancariaEliminar" labelFloat="true" layoutX="407.0" layoutY="310.0" promptText="Número de cuenta a eliminar" AnchorPane.leftAnchor="410.0" AnchorPane.rightAnchor="143.0" />
+                  <JFXComboBox fx:id="comboBox_cuentaBancariaEliminar" labelFloat="true" layoutX="407.0" layoutY="310.0" promptText="Número de cuenta a eliminar" AnchorPane.leftAnchor="390.0" AnchorPane.rightAnchor="143.0" />
                   <JFXButton fx:id="b_eliminarCuentaBancaria" buttonType="RAISED" layoutX="604.0" layoutY="310.0" onAction="#eliminarCuentaBancaria" style="-fx-background-color: EE7D6C;" text="Eliminar cuenta" textFill="#5c0f0f" AnchorPane.rightAnchor="10.0">
                      <font>
                         <Font name="System Bold" size="13.0" />
@@ -198,14 +204,25 @@
                   <JFXButton buttonType="RAISED" layoutX="574.0" layoutY="20.0" onAction="#modificarUsuario" prefHeight="27.0" prefWidth="127.0" style="-fx-background-color: #6cee7d;" text="Guardar cambios" AnchorPane.rightAnchor="59.0" />
                   <JFXToggleButton fx:id="tb_permisosUsuario" layoutX="592.0" layoutY="59.0" text="Usuario" AnchorPane.rightAnchor="57.0" />
                   <JFXToggleButton fx:id="tb_permisosEjecutivo" layoutX="592.0" layoutY="96.0" onAction="#switchPermisosEjecutivo" text="Ejecutivo" AnchorPane.rightAnchor="50.0" />
-                  <JFXButton fx:id="b_eliminarPersona" buttonType="RAISED" layoutX="574.0" layoutY="152.0" onAction="#eliminarPersona" style="-fx-background-color: EE7D6C;" text="Eliminar Persona" textFill="#5c0f0f">
+                  <JFXButton fx:id="b_eliminarPersona" buttonType="RAISED" layoutX="574.0" layoutY="152.0" onAction="#eliminarPersona" style="-fx-background-color: EE7D6C;" text="Eliminar Persona" textFill="#5c0f0f" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="160.0">
                      <font>
                         <Font name="System Bold" size="13.0" />
                      </font>
                   </JFXButton>
+                  <JFXComboBox fx:id="comboBox_sucursalAsociada1" labelFloat="true" layoutX="535.0" layoutY="210.0" promptText="Sucursal Asociada" AnchorPane.rightAnchor="10.0" />
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="ap_Report" visible="false" GridPane.columnIndex="1">
+            <AnchorPane fx:id="ap_Girar" prefHeight="200.0" prefWidth="200.0" visible="false" GridPane.columnIndex="1">
+               <children>
+                  <JFXTextField fx:id="tf_searchRutGiro" labelFloat="true" prefHeight="27.0" prefWidth="459.0" promptText="Nombre, rut, correo electronico, ..." style="-fx-background-color: #a8c9ce;" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="10.0" />
+                  <JFXButton buttonType="RAISED" onAction="#searchUserGiro" style="-fx-background-color: #96d8ff;" text="Buscar" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
+                  <JFXComboBox fx:id="comboBox_cuentaBancariaGiro" layoutX="36.0" layoutY="92.0" promptText="Cuenta Bancaria" visible="false" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="92.0" />
+                  <JFXTextField fx:id="tf_montoGirar" layoutX="305.0" layoutY="142.0" promptText="Monto" visible="false" />
+                  <JFXButton fx:id="b_retirar" layoutX="250.0" layoutY="201.0" onAction="#hacerRetiro" prefWidth="100.0" style="-fx-background-color: #97EEA2;" text="Retirar" visible="false" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="400.0" />
+                  <JFXButton fx:id="b_depositar" layoutX="401.0" layoutY="201.0" onAction="#hacerDeposito" prefWidth="100.0" style="-fx-background-color: #FFC542;" text="Depositar" visible="false" AnchorPane.leftAnchor="401.0" AnchorPane.rightAnchor="249.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane fx:id="ap_Report" GridPane.columnIndex="1">
                <children>
                   <ScatterChart fx:id="scatterChart" layoutX="14.0" layoutY="21.0" prefHeight="241.0" prefWidth="500.0" title="Grafico Dinero vs Ciudad (En millones de pesos)" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
                     <xAxis>
@@ -215,10 +232,10 @@
                       <NumberAxis side="LEFT" />
                     </yAxis>
                   </ScatterChart>
-                  <Label fx:id="lb_totalClientes" layoutX="541.0" layoutY="279.0" text="Total clientes" />
-                  <Label fx:id="lb_totalCuentasBancarias" layoutX="541.0" layoutY="296.0" text="Total cuentas bancarias" />
-                  <Label fx:id="lb_ciudadMasValor" layoutX="541.0" layoutY="313.0" text="Ciudad mas adinerada" />
-                  <Label fx:id="lb_ciudadMenosValor" layoutX="541.0" layoutY="330.0" text="Ciudad menos adinerada" />
+                  <Label fx:id="lb_1" layoutX="541.0" layoutY="279.0" text="Total clientes" />
+                  <Label fx:id="lb_2" layoutX="541.0" layoutY="296.0" text="Total cuentas bancarias" />
+                  <Label fx:id="lb_3" layoutX="541.0" layoutY="313.0" text="Ciudad mas adinerada" />
+                  <Label fx:id="lb_4" layoutX="541.0" layoutY="330.0" text="Ciudad menos adinerada" />
                   <JFXTreeTableView fx:id="treeTableViewReporteCiudad" layoutX="14.0" layoutY="279.0" prefHeight="249.0" prefWidth="520.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="280.0">
                      <columns>
                         <TreeTableColumn prefWidth="75.0" text="Ciudad" />
@@ -230,16 +247,25 @@
                      </columnResizePolicy>
                   </JFXTreeTableView>
                   <JFXButton layoutX="541.0" layoutY="499.0" onAction="#generarReportePorArchivo" prefHeight="27.0" prefWidth="210.0" style="-fx-background-color: #a4ff9e;" text="Generar archivo de reporte" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="541.0" AnchorPane.rightAnchor="10.0" />
-                  <Label fx:id="lb_totalValor" layoutX="541.0" layoutY="357.0" text="Ciudad menos adinerada" />
-               </children></AnchorPane>
-            <AnchorPane fx:id="ap_Girar" prefHeight="200.0" prefWidth="200.0" visible="false" GridPane.columnIndex="1">
+                  <Label fx:id="lb_5" layoutX="541.0" layoutY="357.0" text="Ciudad menos adinerada" />
+               </children>
+            </AnchorPane>
+            <AnchorPane fx:id="ap_AdmSucursales" prefHeight="200.0" prefWidth="200.0" visible="false" GridPane.columnIndex="1">
                <children>
-                  <JFXTextField fx:id="tf_searchRutGiro" labelFloat="true" prefHeight="27.0" prefWidth="459.0" promptText="Nombre, rut, correo electronico, ..." style="-fx-background-color: #a8c9ce;" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="10.0" />
-                  <JFXButton buttonType="RAISED" onAction="#searchUserGiro" style="-fx-background-color: #96d8ff;" text="Buscar" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
-                  <JFXComboBox fx:id="comboBox_cuentaBancariaGiro" layoutX="36.0" layoutY="92.0" promptText="Cuenta Bancaria" visible="false" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="92.0" />
-                  <JFXTextField fx:id="tf_montoGirar" layoutX="305.0" layoutY="142.0" promptText="Monto" visible="false" />
-                  <JFXButton fx:id="b_retirar" layoutX="250.0" layoutY="201.0" onAction="#hacerRetiro" prefWidth="100.0" style="-fx-background-color: #97EEA2;" text="Retirar" visible="false" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="400.0" />
-                  <JFXButton fx:id="b_depositar" layoutX="401.0" layoutY="201.0" onAction="#hacerDeposito" prefWidth="100.0" style="-fx-background-color: #FFC542;" text="Depositar" visible="false" AnchorPane.leftAnchor="401.0" AnchorPane.rightAnchor="249.0" />
+                  <JFXTreeTableView fx:id="treeTableViewSucursales" layoutX="256.0" layoutY="91.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="50.0">
+                     <columnResizePolicy>
+                        <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                     <columns>
+                        <TreeTableColumn prefWidth="75.0" text="Nombre" />
+                        <TreeTableColumn prefWidth="75.0" text="Direccion" />
+                        <TreeTableColumn prefWidth="75.0" text="Código" />
+                     </columns>
+                  </JFXTreeTableView>
+                  <JFXTextField fx:id="tf_nombreNuevaSucursal" layoutX="14.0" layoutY="14.0" promptText="Nombre" />
+                  <JFXTextField fx:id="tf_direccionNuevaSucursal" layoutX="177.0" layoutY="14.0" promptText="Direccion" AnchorPane.leftAnchor="180.0" AnchorPane.rightAnchor="170.0" />
+                  <JFXButton buttonType="RAISED" layoutX="616.0" layoutY="14.0" onAction="#agregarSucursal" prefHeight="30.0" prefWidth="130.0" ripplerFill="#015e94" style="-fx-background-color: #009af5;" text="Crear Sucursal" textFill="#dbf9ff" AnchorPane.rightAnchor="10.0" />
+                  <JFXButton buttonType="RAISED" layoutX="608.0" layoutY="502.0" onAction="#eliminarSucursal" prefHeight="30.0" prefWidth="221.0" ripplerFill="#d02626" style="-fx-background-color: #d06363;" text="Eliminar Sucursal seleccionada" textFill="#dbf9ff" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
                </children>
             </AnchorPane>
          </children>

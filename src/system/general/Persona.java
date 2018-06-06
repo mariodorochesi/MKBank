@@ -20,7 +20,7 @@ public class Persona{
     private String estadoCivil;
     private String contrasena;
     private String genero;
-    private int sucursalAsociada;
+    private String sucursalAsociada;
 
     private LocalDate fechaNacimiento;
 
@@ -203,11 +203,11 @@ public class Persona{
         this.cuentaSuperAdministrador = cuentaSuperAdministrador;
     }
 
-    public int getSucursalAsociada() {
+    public String getSucursalAsociada() {
         return sucursalAsociada;
     }
 
-    public void setSucursalAsociada(int sucursalAsociada) {
+    public void setSucursalAsociada(String sucursalAsociada) {
         this.sucursalAsociada = sucursalAsociada;
     }
 

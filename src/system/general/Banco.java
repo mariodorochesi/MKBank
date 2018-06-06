@@ -1,5 +1,16 @@
 package system.general;
 
+import com.jfoenix.controls.JFXTreeTableView;
+import com.jfoenix.controls.RecursiveTreeItem;
+import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Label;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import system.SQL.ConexionSQL;
 import system.clasesColecciones.*;
 import system.interfaces.Reportable;
@@ -28,6 +39,8 @@ public class Banco implements Reportable {
     //Mapa de Transferencias Bancarias. Se encuentran por un identificador unico
     private MapaTransferencias mapaTransferencias;
 
+    //Mapa de sucursales, se encuentran por un identificador unico.
+    private MapaSucursales mapaSucursales;
 
     //Variable para enviar mensajes por pantalla
     private String lastError;
@@ -48,6 +61,7 @@ public class Banco implements Reportable {
         mapaCuentaBancarias = new MapaCuentaBancarias();
         mapaPersonas = new MapaPersonas();
         mapaTransferencias = new MapaTransferencias();
+        mapaSucursales = new MapaSucursales();
         //listaSucursales = new ArrayList<>();
         lastError = "";
     }
@@ -219,7 +233,7 @@ public class Banco implements Reportable {
      * @param diaNacimiento Dia de Nacimiento de la Persona a agregar
      * @param estadoCivil Estado Civil de la Persona a agregar
      * @param genero Genero (Sexo) de la Persona a agregar
-     * @param tipoCuentaPersona
+     * @param sucursalAsociada Sucursal a la que esta asociada la persona
      */
     public void agregarPersona(CuentaAdministrador cuentaAdministrador,
                                String nombres ,
@@ -235,7 +249,7 @@ public class Banco implements Reportable {
                                int diaNacimiento,
                                String estadoCivil,
                                String genero,
-                               String tipoCuentaPersona)
+                               String sucursalAsociada)
     {
 
         if(mapaPersonas.existePersona(rut)){
@@ -243,16 +257,23 @@ public class Banco implements Reportable {
             lastError = "La persona ya existia previamente en el mapa. No ha sido agregada";
             return;
         }
-
-        mapaPersonas.agregarPersona(nombres, apellidos, rut, ciudad, direccion, correoElectronico,
-                telefono, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, estadoCivil, genero);
-
-        if(tipoCuentaPersona.equals("Cuenta Ejecutivo")){
-            Persona persona = mapaPersonas.obtenerPersona(rut);
-            if(cuentaAdministrador.crearCuentaEjecutivo(persona)){
-            }
+        if(!mapaSucursales.existeSucursal(sucursalAsociada)){
+            System.out.println("Error, la sucursal " + sucursalAsociada + " no existe");
+            lastError = "Error, la sucursal " + sucursalAsociada + " no existe";
+            return;
         }
-        lastError = cuentaAdministrador.getLastError();
+
+
+        mapaPersonas.agregarPersona(nombres,apellidos,rut,ciudad,direccion,correoElectronico,
+                telefono,nacionalidad,annoNacimiento,mesNacimiento,diaNacimiento,estadoCivil, genero);
+
+        Persona p = mapaPersonas.obtenerPersona(rut);
+        p.setSucursalAsociada(sucursalAsociada);
+        mapaSucursales.obtenerSucursal(sucursalAsociada).agregarPersonaSucursal(p);
+
+        saver.agregarPersonaSQL(mapaPersonas.obtenerPersona(rut),0);
+        lastError = cuentaAdministrador.getPersona().getNombres() + " " + cuentaAdministrador.getPersona().getApellidos() +
+                " ha ingresado " + nombres + " " + apellidos + " correctamente";
     }
 
 
@@ -418,13 +439,19 @@ public class Banco implements Reportable {
                                int diaNacimiento,
                                String estadoCivil,
                                String genero,
-                               String tipoCuentaBancaria)
+                               String tipoCuentaBancaria,
+                               String sucursalAsociada)
     {
 
         if(mapaPersonas.existePersona(rut)){
             System.out.println("La persona ya existia previamente en el mapa. No ha sido agregada");
             lastError = "La persona ya existia previamente en el mapa. No ha sido agregada";
 
+            return;
+        }
+        if(!mapaSucursales.existeSucursal(sucursalAsociada)){
+            System.out.println("La sucursal no existe");
+            lastError = "La sucursal no existe";
             return;
         }
 
@@ -440,98 +467,172 @@ public class Banco implements Reportable {
             }
 
         }
+
+        // Agregando a la persona en la sucursal
+        persona.setSucursalAsociada(sucursalAsociada);
+        mapaSucursales.obtenerSucursal(sucursalAsociada).agregarPersonaSucursal(persona);
+
+
         saver.agregarPersonaSQL(persona,getPermisos(persona));
         lastError += " " + cuentaEjecutivo.getLastError();
     }
 
-        public void agregarPersona(
-                String nombre,
-                String apellido,
-                String rut,
-                String ciudad,
-                String direccion,
-                String correoElectronico,
-                String telefono,
-                String nacionalidad,
-                int annoNacimiento,
-                int mesNacimiento,
-                int diaNacimiento,
-                String estadoCivil,
-                String genero,
-                String contrasena){
-            System.out.println("Agregando a " + nombre + " " + apellido);
+    /**
+     * Agrega una persona al banco y a la sucursal a la que pertenece
+     * @param nombre            - Nombre de la persona.
+     * @param apellido          - Apellido de la persona.
+     * @param rut               - Rut de la persona.
+     * @param ciudad            - Ciudad donde vive de la persona.
+     * @param direccion         - Direccion donde vive la persona.
+     * @param correoElectronico - Correo electronico de contacto.
+     * @param telefono          - Telefono de contacto.
+     * @param nacionalidad      - Nacionalidad de la persona.
+     * @param annoNacimiento    - Año de nacimiento de la persona.
+     * @param mesNacimiento     - Mes de nacimiento de la persona.
+     * @param diaNacimiento     - Dia de nacimiento de la persona.
+     * @param estadoCivil       - Estado civil de la persona.
+     * @param genero            - Genero de la persona.
+     * @param contrasena        - Contraseña de login de la persona.
+     * @param sucursal          - Sucursal asociada a la persona.
+     */
+    public void agregarPersona(
+            String nombre,
+            String apellido,
+            String rut,
+            String ciudad,
+            String direccion,
+            String correoElectronico,
+            String telefono,
+            String nacionalidad,
+            int annoNacimiento,
+            int mesNacimiento,
+            int diaNacimiento,
+            String estadoCivil,
+            String genero,
+            String contrasena,
+            String sucursal){
+        System.out.println("Agregando a " + nombre + " " + apellido);
 
-            Persona nuevaPersona = new Persona(nombre,apellido,rut,ciudad,direccion,correoElectronico,telefono,nacionalidad,
-                    annoNacimiento,mesNacimiento,diaNacimiento,estadoCivil,genero,contrasena);
-            mapaPersonas.agregarPersona(nuevaPersona);
+        Persona nuevaPersona = new Persona(nombre,apellido,rut,ciudad,direccion,correoElectronico,telefono,nacionalidad,
+                annoNacimiento,mesNacimiento,diaNacimiento,estadoCivil,genero,contrasena);
+        mapaPersonas.agregarPersona(nuevaPersona);
+
+        // Agregando la persona a la sucursal asociada.
+        nuevaPersona.setSucursalAsociada(sucursal);
+        if(mapaSucursales.existeSucursal(sucursal))
+            mapaSucursales.obtenerSucursal(sucursal).agregarPersonaSucursal(nuevaPersona);
+        else{
+            System.out.println("Error: la sucursal " + sucursal + "no existe");
+            System.exit(-1);
+        }
+    }
+
+    /**
+     * Agrega una nueva sucursal al mapa de sucursales, esta sobrecarga se usa
+     * cuando se estan cargando las sucursales desde la base de datos, por lo que no
+     * se tiene que agregar nuevamente a la base de datos
+     * @param nombre        - Nombre de la sucursal que se esta agregando
+     * @param direccion     - Direccion de la sucursal que se esta agregando
+     * @param codigo        - Codigo de la sucursal que se esta agregando
+     */
+    public void agregarSucursal(String nombre, String direccion, int codigo){
+        // TODO: esto deberia agregar una nueva sucursal al mapa de sucursales con los parametros ignresados
+        mapaSucursales.agregarSucursal(nombre, direccion, codigo);
+    }
+
+    
+    /**
+     * Agrega una nueva sucursal al mapa de sucursales y la agrega a la base de datos
+     * @param nombre        - Nombre de la nueva sucursal
+     * @param direccion     - Direccion de la nueva sucursal
+     */
+    public void agregarSucursal(String nombre, String direccion){
+        mapaSucursales.agregarSucursal(nombre, direccion, mapaSucursales.generarIdentificador());
+        lastError = mapaSucursales.getLastError();
+
+        // Agregando la sucursal a la base de datos
+        saver.agregarSucursalSQL(mapaSucursales.obtenerSucursal(nombre));
+    }
+
+    public void eliminarSucursal(String nombre){
+        if(!mapaSucursales.existeSucursal(nombre)){
+            lastError = "Error, la sucursal no existe";
+            return;
         }
 
-        public void otorgarPermisosUsuarioCarga(String rut){
-            if(mapaPersonas.existePersona(rut)){
-                Persona persona = mapaPersonas.obtenerPersona(rut);
-                persona.setCuentaUsuario(new CuentaUsuario(persona));
-            }
-        }
+        if(mapaSucursales.eliminarSucursal(nombre))
+            saver.eliminarSucursalSQL(nombre);
 
-        public void otorgarPermisosSuperioresCarga(int permisos,String rut){
-            if(mapaPersonas.existePersona(rut)){
-                Persona persona = mapaPersonas.obtenerPersona(rut);
-                if(permisos == Banco.PERMISO_EJECUTIVO)
-                    persona.setCuentaEjecutivo(new CuentaEjecutivo(persona));
-                else if(permisos == Banco.PERMISO_ADMINISTRADOR)
-                    persona.setCuentaAdministrador(new CuentaAdministrador(persona));
-                else if(permisos == Banco.PERMISO_SUPERADMINISTRADOR)
-                    persona.setCuentaSuperAdministrador(new CuentaSuperAdministrador(persona));
-                else
-                    System.out.println("Permisos no validos para la persona " + persona.getNombres() + " " + persona.getApellidos());
-            }
-        }
+        lastError = mapaSucursales.getLastError();
 
-        public void otorgarPermisosUsuario(String rut){
-            if(mapaPersonas.existePersona(rut)){
-                Persona persona = mapaPersonas.obtenerPersona(rut);
-                saver.modificarPermisoUsuarioSQL(persona, 1);
-                persona.setCuentaUsuario(new CuentaUsuario(persona));
-            }
-        }
+    }
 
-        public void otorgarPermisosSuperiores(int permisos,String rut){
-            if(mapaPersonas.existePersona(rut)){
-                Persona persona = mapaPersonas.obtenerPersona(rut);
-                if(permisos == Banco.PERMISO_EJECUTIVO)
-                    persona.setCuentaEjecutivo(new CuentaEjecutivo(persona));
-                else if(permisos == Banco.PERMISO_ADMINISTRADOR)
-                    persona.setCuentaAdministrador(new CuentaAdministrador(persona));
-                else if(permisos == Banco.PERMISO_SUPERADMINISTRADOR)
-                    persona.setCuentaSuperAdministrador(new CuentaSuperAdministrador(persona));
-                else
-                    System.out.println("Permisos no validos para la persona " + persona.getNombres() + " " + persona.getApellidos());
-                saver.modificarPermisosSQLSuperior(persona, permisos);
-            }
+    public void otorgarPermisosUsuarioCarga(String rut){
+        if(mapaPersonas.existePersona(rut)){
+            Persona persona = mapaPersonas.obtenerPersona(rut);
+            persona.setCuentaUsuario(new CuentaUsuario(persona));
         }
+    }
 
-        public void revocarPermisosSuperiores(String rut){
-            if(mapaPersonas.existePersona(rut)){
-                Persona persona = mapaPersonas.obtenerPersona(rut);
-                persona.setCuentaEjecutivo(null);
-                persona.setCuentaAdministrador(null);
-                persona.setCuentaSuperAdministrador(null);
-                saver.modificarPermisosSQLSuperior(persona, 0);
-                System.out.println("Permisos revocados y actualizados en la BD");
-            }
+    public void otorgarPermisosSuperioresCarga(int permisos,String rut){
+        if(mapaPersonas.existePersona(rut)){
+            Persona persona = mapaPersonas.obtenerPersona(rut);
+            if(permisos == Banco.PERMISO_EJECUTIVO)
+                persona.setCuentaEjecutivo(new CuentaEjecutivo(persona));
+            else if(permisos == Banco.PERMISO_ADMINISTRADOR)
+                persona.setCuentaAdministrador(new CuentaAdministrador(persona));
+            else if(permisos == Banco.PERMISO_SUPERADMINISTRADOR)
+                persona.setCuentaSuperAdministrador(new CuentaSuperAdministrador(persona));
+            else
+                System.out.println("Permisos no validos para la persona " + persona.getNombres() + " " + persona.getApellidos());
         }
+    }
 
-        public void agregarCuentaBancaria(CuentaSuperAdministrador cuentaSuperAdministrador,
-                                          CuentaUsuario cuentaUsuario,
-                                          String tipoCuentaBancaria,
-                                          long identificador,
-                                          long monto){
-            if(cuentaSuperAdministrador.crearCuentaBancaria(cuentaUsuario,tipoCuentaBancaria,identificador)){
-                mapaCuentaBancarias.agregarCuentaBancaria(identificador,cuentaUsuario.isCuentaInCuentasBancarias(identificador));
-            }
-            mapaCuentaBancarias.obtenerCuentaBancaria(identificador).setMonto(monto);
-            lastError = cuentaSuperAdministrador.getLastError();
+    public void otorgarPermisosUsuario(String rut){
+        if(mapaPersonas.existePersona(rut)){
+            Persona persona = mapaPersonas.obtenerPersona(rut);
+            saver.modificarPermisoUsuarioSQL(persona, 1);
+            persona.setCuentaUsuario(new CuentaUsuario(persona));
         }
+    }
+
+    public void otorgarPermisosSuperiores(int permisos,String rut){
+        if(mapaPersonas.existePersona(rut)){
+            Persona persona = mapaPersonas.obtenerPersona(rut);
+            if(permisos == Banco.PERMISO_EJECUTIVO)
+                persona.setCuentaEjecutivo(new CuentaEjecutivo(persona));
+            else if(permisos == Banco.PERMISO_ADMINISTRADOR)
+                persona.setCuentaAdministrador(new CuentaAdministrador(persona));
+            else if(permisos == Banco.PERMISO_SUPERADMINISTRADOR)
+                persona.setCuentaSuperAdministrador(new CuentaSuperAdministrador(persona));
+            else
+                System.out.println("Permisos no validos para la persona " + persona.getNombres() + " " + persona.getApellidos());
+            saver.modificarPermisosSQLSuperior(persona, permisos);
+        }
+    }
+
+    public void revocarPermisosSuperiores(String rut){
+        if(mapaPersonas.existePersona(rut)){
+            Persona persona = mapaPersonas.obtenerPersona(rut);
+            persona.setCuentaEjecutivo(null);
+            persona.setCuentaAdministrador(null);
+            persona.setCuentaSuperAdministrador(null);
+            saver.modificarPermisosSQLSuperior(persona, 0);
+            System.out.println("Permisos revocados y actualizados en la BD");
+        }
+    }
+
+    public void agregarCuentaBancaria(CuentaSuperAdministrador cuentaSuperAdministrador,
+                                      CuentaUsuario cuentaUsuario,
+                                      String tipoCuentaBancaria,
+                                      long identificador,
+                                      long monto){
+        if(cuentaSuperAdministrador.crearCuentaBancaria(cuentaUsuario,tipoCuentaBancaria,identificador)){
+            mapaCuentaBancarias.agregarCuentaBancaria(identificador,cuentaUsuario.isCuentaInCuentasBancarias(identificador));
+        }
+        mapaCuentaBancarias.obtenerCuentaBancaria(identificador).setMonto(monto);
+        lastError = cuentaSuperAdministrador.getLastError();
+    }
 
 
     /**
@@ -595,6 +696,7 @@ public class Banco implements Reportable {
         long identificador = generarIdentificador();
         if(cuentaEjecutivo.crearCuentaBancaria(cuentaUsuario,tipoCuentaBancaria,identificador)){
             mapaCuentaBancarias.agregarCuentaBancaria(identificador,cuentaUsuario.isCuentaInCuentasBancarias(identificador));
+            saver.agregarCuentaBancariaSQL(mapaCuentaBancarias.obtenerCuentaBancaria(identificador));
             System.out.println("La cuenta Bancaria " + identificador + " ha sido agregada al Mapa de Cuentas Bancarias." +
             " El Ejecutivo " + cuentaEjecutivo.getPersona().getNombres() + " " + cuentaEjecutivo.getPersona().getApellidos() + "" +
                     " ha dado la orden de agregarla.");
@@ -950,7 +1052,7 @@ public class Banco implements Reportable {
      * @return True si borra a la Persona / False en caso contrario
      */
     public boolean eliminarPersona(CuentaEjecutivo cuentaEjecutivo, String rut){
-        if(mapaPersonas.existePersona(rut)){
+        if(!mapaPersonas.existePersona(rut)){
             System.out.println("La persona que desea eliminar no se encuentra en el banco.");
             return false;
         }
@@ -1125,7 +1227,8 @@ public class Banco implements Reportable {
                               int mesNacimiento,
                               int diaNacimiento,
                               String estadoCivil,
-                              String genero){
+                              String genero,
+                              String sucursalAsociada){
 
         persona.setNombres(nombre);
         persona.setApellidos(apellidos);
@@ -1138,6 +1241,11 @@ public class Banco implements Reportable {
         persona.setFechaNacimiento(LocalDate.of(annoNacimiento,mesNacimiento,diaNacimiento));
         persona.setEstadoCivil(estadoCivil);
         persona.setGenero(genero);
+
+        // Modificacion de las sucursales
+        mapaSucursales.obtenerSucursal(persona.getSucursalAsociada()).eliminarPersonaSucursal(persona);
+        persona.setSucursalAsociada(sucursalAsociada);
+        mapaSucursales.obtenerSucursal(sucursalAsociada).agregarPersonaSucursal(persona);
 
         System.out.println("Guardando las modificaciones en la base de datos");
         saver.editarPersonaSQL(persona);
@@ -1629,8 +1737,98 @@ public class Banco implements Reportable {
         return lastError;
     }
 
-    @Override
-    public void generarReporte() {
+    public String[] obtenerNombresSucursales(){
+        return mapaSucursales.obtenerNombresSucursales();
+    }
 
+    public SucursalTreeTableView[] obtenerSucursalesForTable(){
+        return mapaSucursales.getSucursalesForTable();
+    }
+
+    @Override
+    public void generarReporte(ArrayList<String> reportLines, ScatterChart grafico, JFXTreeTableView tabla,
+                               Label lb1, Label lb2, Label lb3, Label lb4, Label lb5) {
+        reportLines.removeAll(reportLines);
+        String ciudadMasAdinerada = "";
+        long ciudadMasAdinerada_valor = 0;
+        String ciudadMenosAdinerada = "";
+        long ciudadMenosAdinerada_valor = 0;
+        boolean primeraIteracion = true;
+        long totalValor = 0;
+        long valorEstaCiudad = 0;
+        long totalCuentas = cantidadCuentasBancarias();
+
+        ObservableList data = FXCollections.observableArrayList();
+
+        // Limpiando data
+        grafico.getData().removeAll(grafico.getData());
+
+        // Creando recursos
+        XYChart.Series series = new XYChart.Series();
+        HashMap<String, Long> mapaCiudades = generarReportePorCiudad();
+
+        reportLines.add("Ciudad,Valor,Usuarios");
+
+        // Agregando data
+        for(String ciudad : mapaCiudades.keySet()) {
+            valorEstaCiudad = mapaCiudades.get(ciudad);
+            if(primeraIteracion){
+                ciudadMasAdinerada = ciudad;
+                ciudadMasAdinerada_valor = valorEstaCiudad;
+                ciudadMenosAdinerada = ciudad;
+                ciudadMenosAdinerada_valor = valorEstaCiudad;
+                primeraIteracion = false;
+            }
+            else{
+                if(ciudadMasAdinerada_valor < valorEstaCiudad){
+                    ciudadMasAdinerada = ciudad;
+                    ciudadMasAdinerada_valor = valorEstaCiudad;
+                }
+                if(ciudadMenosAdinerada_valor > valorEstaCiudad){
+                    ciudadMenosAdinerada = ciudad;
+                    ciudadMenosAdinerada_valor = valorEstaCiudad;
+                }
+            }
+
+            totalValor += valorEstaCiudad;
+            series.getData().add(new XYChart.Data(ciudad, mapaCiudades.get(ciudad)));
+            data.add(new DineroPorCiudadYClientes(
+                    ciudad, String.valueOf(valorEstaCiudad), String.valueOf(totalclientesEnCiudad(ciudad))
+            ));
+            reportLines.add(ciudad + "," +  String.valueOf(valorEstaCiudad) + "," + String.valueOf(totalclientesEnCiudad(ciudad)));
+        }
+        reportLines.add("");
+        grafico.getData().add(series);
+
+        TreeTableColumn c1 = (TreeTableColumn) tabla.getColumns().get(0);
+        TreeTableColumn c2 = (TreeTableColumn) tabla.getColumns().get(1);
+        TreeTableColumn c3 = (TreeTableColumn) tabla.getColumns().get(2);
+
+        c1.setCellValueFactory(
+                new TreeItemPropertyValueFactory<DineroPorCiudadYClientes,String>("ciudad")
+        );
+        c2.setCellValueFactory(
+                new TreeItemPropertyValueFactory<DineroPorCiudadYClientes,String>("monto")
+        );
+        c3.setCellValueFactory(
+                new TreeItemPropertyValueFactory<DineroPorCiudadYClientes,String>("cclientes")
+        );
+
+        TreeItem<CuentaBancariaRecursiveTree> root = new RecursiveTreeItem<>(data, RecursiveTreeObject::getChildren);
+        tabla.setRoot(root);
+
+        tabla.setShowRoot(false);
+
+        lb1.setText("T. Clientes:\t\t" + totalclientes());
+        lb2.setText("T. Cuentas B:\t\t" + cantidadCuentasBancarias());
+        lb3.setText("T. Valor:\t\t\t" + totalValor);
+        lb4.setText("C. Mas Valor:\t\t" + ciudadMasAdinerada + " (" + ciudadMasAdinerada_valor + ")");
+        lb5.setText("C. Menos Valor:\t" + ciudadMenosAdinerada + " (" + ciudadMenosAdinerada_valor + ")");
+
+        reportLines.add("T. Clientes," + totalclientes());
+        reportLines.add("T. Cuentas B,\t\t" + cantidadCuentasBancarias());
+        reportLines.add("T. Valor,\t\t\t" + totalValor);
+        reportLines.add("C. Mas Valor,\t\t" + ciudadMasAdinerada + "," + ciudadMasAdinerada_valor);
+        reportLines.add("C. Menos Valor,\t" + ciudadMenosAdinerada + "," + ciudadMenosAdinerada_valor);
     }
 }

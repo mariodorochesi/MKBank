@@ -16,6 +16,7 @@ public class Loader {
 
 
     public void loadFromSQL(){
+        conexionSQL.cargarSucursales(banco);
         conexionSQL.cargarPersonas(banco);
         conexionSQL.cargarCuentas(banco);
         conexionSQL.cargarTransferencias(banco);

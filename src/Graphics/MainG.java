@@ -53,6 +53,7 @@ public class MainG extends Application {
         //banco.loadFiles();
         loader.loadFromSQL();
         ControllerEjecutivo.setBanco(banco);
+        ControllerAdministrador.setBanco(banco);
         ControllerUser.setBanco(banco);
         ControllerLogin.setBanco(banco);
 

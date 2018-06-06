@@ -4,7 +4,7 @@ package system.systemAccounts;
 import system.general.Persona;
 import system.interfaces.Reportable;
 
-public class CuentaEjecutivo extends Cuenta implements Reportable{
+public class CuentaEjecutivo extends Cuenta{
 
     private boolean cuentaBloqueada;
 
@@ -192,10 +192,5 @@ public class CuentaEjecutivo extends Cuenta implements Reportable{
 
     public Persona getPersona(){
         return  persona;
-    }
-
-    @Override
-    public void generarReporte() {
-        // TODO: generar reporte del ejecutivo
     }
 }

@@ -21,6 +21,7 @@ import system.general.Banco;
 import system.general.DineroPorCiudadYClientes;
 import system.general.Persona;
 import system.general.PythonRunner;
+import system.interfaces.Reportable;
 import system.systemAccounts.CuentaBancaria;
 import system.systemAccounts.CuentaBancariaRecursiveTree;
 import system.systemAccounts.CuentaEjecutivo;
@@ -41,6 +42,8 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
     private JFXComboBox comboBox_estadoCivil;
     @FXML
     private JFXComboBox comboBox_cuentaBancariaInicial;
+    @FXML
+    private JFXComboBox comboBox_sucursalAsociada;
 
     @FXML
     private JFXTextField tf_nombres;
@@ -77,6 +80,8 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
     private JFXComboBox comboBox_nuevaCuentaBancaria;
     @FXML
     private JFXComboBox comboBox_cuentaBancariaEliminar;
+    @FXML
+    private JFXComboBox comboBox_sucursalAsociada1;
 
     @FXML
     private JFXTextField tf_searchRut;
@@ -108,6 +113,8 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
     private JFXButton b_nuevaCuentaBancaria;
     @FXML
     private JFXButton b_eliminarCuentaBancaria;
+    @FXML
+    private JFXButton b_eliminarPersona;
 
     @FXML
     private JFXDatePicker dp_fechaNacimiento1;
@@ -151,23 +158,21 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
     @FXML
     private JFXButton b_retirar;
 
+    // Recursos del reporte
     @FXML
     private ScatterChart scatterChart;
-
     @FXML
     private JFXTreeTableView treeTableViewReporteCiudad;
-
-    // Labels necesarios:
     @FXML
-    private Label lb_totalClientes;
+    private Label lb_1;
     @FXML
-    private Label lb_totalCuentasBancarias;
+    private Label lb_2;
     @FXML
-    private Label lb_totalValor;
+    private Label lb_3;
     @FXML
-    private Label lb_ciudadMasValor;
+    private Label lb_4;
     @FXML
-    private Label lb_ciudadMenosValor;
+    private Label lb_5;
 
     private String rutBuscadoGiro;
     private String rutBuscado;
@@ -192,6 +197,12 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
         comboBox_cuentaBancariaInicial.getItems().addAll("Cuenta Vista", "Cuenta Corriente", "Cuenta Ahorro");
         comboBox_nuevaCuentaBancaria.getItems().addAll(comboBox_cuentaBancariaInicial.getItems());
 
+        comboBox_sucursalAsociada.getItems().removeAll(comboBox_sucursalAsociada.getItems());
+        comboBox_sucursalAsociada.getItems().addAll(banco.obtenerNombresSucursales());
+
+        comboBox_sucursalAsociada1.getItems().removeAll(comboBox_sucursalAsociada.getItems());
+        comboBox_sucursalAsociada1.getItems().addAll(banco.obtenerNombresSucursales());
+
         reportLines = new ArrayList<>();
     }
 
@@ -215,11 +226,12 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
         final int mesNacimiento = dp_fechaNacimiento.getValue().getMonthValue();
         final int diaNacimiento = dp_fechaNacimiento.getValue().getDayOfMonth();
         final String genero; if(cb_hombre.isSelected()) genero = "Hombre"; else genero = "Mujer";
+        final String sucursalAsociada = (String) comboBox_sucursalAsociada.getValue();
 
 
         banco.agregarPersona(cuentaEjecutivo, nombres, apellidos, rut, ciudad, direccion, correo,
                 celular, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, 
-                (String) comboBox_cuentaBancariaInicial.getValue());
+                (String) comboBox_cuentaBancariaInicial.getValue(), sucursalAsociada);
 
         generateDialog("Completado", banco.getLastError() + tf_searchRut.getText());
 
@@ -244,6 +256,7 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
         tf_nacionalidad.clear();
 
         comboBox_estadoCivil.getSelectionModel().clearSelection();
+        comboBox_sucursalAsociada.getSelectionModel().clearSelection();
 
         cb_hombre.setSelected(false);
         cb_mujer.setSelected(false);
@@ -263,6 +276,7 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
 
         comboBox_estadoCivil1.getSelectionModel().clearSelection();
         comboBox_cuentaBancariaEliminar.getItems().removeAll(comboBox_cuentaBancariaInicial.getItems());
+        comboBox_sucursalAsociada1.getSelectionModel().clearSelection();
 
         dp_fechaNacimiento1.setValue(null);
 
@@ -343,7 +357,7 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
      * permitiendo limpiar la pantalla y mostrar la que corresponde.
      */
     public void goReport(ActionEvent event){
-        updateReporte();
+        updateReporte(banco);
         ap_Report.setVisible(true);
         ap_EditUser.setVisible(false);
         ap_NewUser.setVisible(false);
@@ -426,6 +440,7 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
             final String estadoCivil = cuentaUsuario.getPersona().getEstadoCivil();
             final LocalDate nacimiento = cuentaUsuario.getPersona().getFechaNacimiento();
             final String nacionalidad = cuentaUsuario.getPersona().getNacionalidad();
+            final String sucursalAsociada = cuentaUsuario.getPersona().getSucursalAsociada();
 
             final boolean hombre = cuentaUsuario.getPersona().getGenero().equals("Hombre");
 
@@ -440,6 +455,7 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
             tf_celular1.setText(celular);
             tf_correo1.setText(correo);
             comboBox_estadoCivil1.setValue(estadoCivil);
+            comboBox_sucursalAsociada1.setValue(sucursalAsociada);
             cb_hombre1.setSelected(hombre);
             cb_mujer1.setSelected(!hombre);
             tf_nacionalidad1.setText(nacionalidad.toUpperCase());
@@ -453,9 +469,8 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
     /**
      * Funcion gatillada al precionar el boton "modificar". Modifica
      * todos los datos almacenados del usuario
-     * @param event evento ocacionado al precionar el boton modificar
      */
-    public void modificarUsuario(ActionEvent event){
+    public void modificarUsuario(){
         Persona persona = banco.isPersonaOnBanco(rutBuscado);
         if(banco.getPermisos(cuentaEjecutivo.getPersona()) >= banco.getPermisos(persona)) {
             final String nombres = tf_nombres1.getText();
@@ -466,20 +481,38 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
             final String celular = tf_celular1.getText();
             final String direccion = tf_direccion1.getText();
             final String ciudad = tf_ciudad1.getText();
-            final String eCivil = (String) comboBox_estadoCivil1.getValue();
+            final String eCivil = comboBox_estadoCivil1.getValue();
             final String nacionalidad = tf_nacionalidad1.getText();
             final int annoNacimiento = dp_fechaNacimiento1.getValue().getYear();
             final int mesNacimiento = dp_fechaNacimiento1.getValue().getMonthValue();
             final int diaNacimiento = dp_fechaNacimiento1.getValue().getDayOfMonth();
             final String genero; if(cb_hombre1.isSelected()) genero = "Hombre"; else genero = "Mujer";
+            final String sucursalAsociada = (String) comboBox_sucursalAsociada1.getValue();
 
             banco.editarPersona(persona, nombres, apellidos, rut, ciudad, direccion, correo, celular,
-                    nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero);
+                    nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursalAsociada);
         }
         else {
             generateDialog("Error", "permisos insuficientes para modificar datos de "
                     + persona.getNombres() + " " + persona.getApellidos());
         }
+
+    }
+
+    /**
+     * Elimina la persona que se busco en la pestaña de modificar usuario,
+     * siempre y cuando no contenga dinero en alguna de sus cuentas bancarias.
+     */
+    public void eliminarPersona(){
+
+        String rut = tf_searchRut.getText();
+        Persona p = banco.isPersonaOnBanco(rut);
+        if(p != null) {
+            banco.eliminarPersona(cuentaEjecutivo, rut);
+            generateDialog("Operacion Exitosa", p.getNombres() + " " + p.getApellidos() + " ha sido eliminado");
+        }
+        else
+            generateDialog("Error", "Usuario no encontrado con el rut indicado");
 
     }
 
@@ -506,6 +539,8 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
         tf_nacionalidad1.setVisible(visible);
         comboBox_cuentaBancariaEliminar.setVisible(visible);
         b_eliminarCuentaBancaria.setVisible(visible);
+        b_eliminarPersona.setVisible(visible);
+        comboBox_sucursalAsociada1.setVisible(visible);
     }
 
     /**
@@ -718,89 +753,9 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
      * Actualiza la pestaña de reportes con los datos actuales del banco y prepara
      * los datos para escribir el archivo de reporte.
      */
-    private void updateReporte(){
-        reportLines.removeAll(reportLines);
-        String ciudadMasAdinerada = "";
-        long ciudadMasAdinerada_valor = 0;
-        String ciudadMenosAdinerada = "";
-        long ciudadMenosAdinerada_valor = 0;
-        boolean primeraIteracion = true;
-        long totalValor = 0;
-        long valorEstaCiudad = 0;
-        long totalCuentas = banco.cantidadCuentasBancarias();
-
-        ObservableList data = FXCollections.observableArrayList();
-
-        // Limpiando data
-        scatterChart.getData().removeAll(scatterChart.getData());
-
-        // Creando recursos
-        XYChart.Series series = new XYChart.Series();
-        HashMap<String, Long> mapaCiudades = banco.generarReportePorCiudad();
-
-        reportLines.add("Ciudad,Valor,Usuarios");
-
-        // Agregando data
-        for(String ciudad : mapaCiudades.keySet()) {
-            valorEstaCiudad = mapaCiudades.get(ciudad);
-            if(primeraIteracion){
-                ciudadMasAdinerada = ciudad;
-                ciudadMasAdinerada_valor = valorEstaCiudad;
-                ciudadMenosAdinerada = ciudad;
-                ciudadMenosAdinerada_valor = valorEstaCiudad;
-                primeraIteracion = false;
-            }
-            else{
-                if(ciudadMasAdinerada_valor < valorEstaCiudad){
-                    ciudadMasAdinerada = ciudad;
-                    ciudadMasAdinerada_valor = valorEstaCiudad;
-                }
-                if(ciudadMenosAdinerada_valor > valorEstaCiudad){
-                    ciudadMenosAdinerada = ciudad;
-                    ciudadMenosAdinerada_valor = valorEstaCiudad;
-                }
-            }
-
-            totalValor += valorEstaCiudad;
-            series.getData().add(new XYChart.Data(ciudad, mapaCiudades.get(ciudad)));
-            data.add(new DineroPorCiudadYClientes(
-                ciudad, String.valueOf(valorEstaCiudad), String.valueOf(banco.totalclientesEnCiudad(ciudad))
-            ));
-            reportLines.add(ciudad + "," +  String.valueOf(valorEstaCiudad) + "," + String.valueOf(banco.totalclientesEnCiudad(ciudad)));
-        }
-        reportLines.add("");
-        scatterChart.getData().add(series);
-
-        TreeTableColumn c1 = (TreeTableColumn) treeTableViewReporteCiudad.getColumns().get(0);
-        TreeTableColumn c2 = (TreeTableColumn) treeTableViewReporteCiudad.getColumns().get(1);
-        TreeTableColumn c3 = (TreeTableColumn) treeTableViewReporteCiudad.getColumns().get(2);
-
-        c1.setCellValueFactory(
-                new TreeItemPropertyValueFactory<DineroPorCiudadYClientes,String>("ciudad")
-        );
-        c2.setCellValueFactory(
-                new TreeItemPropertyValueFactory<DineroPorCiudadYClientes,String>("monto")
-        );
-        c3.setCellValueFactory(
-                new TreeItemPropertyValueFactory<DineroPorCiudadYClientes,String>("cclientes")
-        );
-
-        TreeItem<CuentaBancariaRecursiveTree> root = new RecursiveTreeItem<>(data, RecursiveTreeObject::getChildren);
-        treeTableViewReporteCiudad.setRoot(root);
-
-        treeTableViewReporteCiudad.setShowRoot(false);
-
-        lb_totalClientes.setText        ("T. Clientes:\t\t" + banco.totalclientes());
-        lb_totalCuentasBancarias.setText("T. Cuentas B:\t\t" + banco.cantidadCuentasBancarias());
-        lb_totalValor.setText           ("T. Valor:\t\t\t" + totalValor);
-        lb_ciudadMasValor.setText       ("C. Mas Valor:\t\t" + ciudadMasAdinerada + " (" + ciudadMasAdinerada_valor + ")");
-        lb_ciudadMenosValor.setText     ("C. Menos Valor:\t" + ciudadMenosAdinerada + " (" + ciudadMenosAdinerada_valor + ")");
-
-        reportLines.add("T. Clientes," + banco.totalclientes());
-        reportLines.add("T. Cuentas B,\t\t" + banco.cantidadCuentasBancarias());
-        reportLines.add("T. Valor,\t\t\t" + totalValor);
-        reportLines.add("C. Mas Valor,\t\t" + ciudadMasAdinerada + "," + ciudadMasAdinerada_valor);
-        reportLines.add("C. Menos Valor,\t" + ciudadMenosAdinerada + "," + ciudadMenosAdinerada_valor);
+    private void updateReporte(Reportable reportable){
+        reportable.generarReporte(reportLines, scatterChart, treeTableViewReporteCiudad, lb_1, lb_2,
+                lb_3, lb_4, lb_5);
     }
 
     /**

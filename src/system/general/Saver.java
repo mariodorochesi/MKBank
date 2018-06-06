@@ -49,4 +49,12 @@ public class Saver {
         conexionSQL.eliminarCuentaBancariaSQL(identificador);
     }
 
+    
+    public void agregarSucursalSQL(Sucursal sucursal){
+        conexionSQL.agregarSucursalSQL(sucursal);
+    }
+
+    public void eliminarSucursalSQL(String nombre){
+        conexionSQL.eliminarSucursalSQL(nombre);
+    }
 }

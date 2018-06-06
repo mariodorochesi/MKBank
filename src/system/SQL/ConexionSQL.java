@@ -2,6 +2,7 @@ package system.SQL;
 
 import system.general.Banco;
 import system.general.Persona;
+import system.general.Sucursal;
 import system.general.Transferencias;
 import system.systemAccounts.CuentaBancaria;
 
@@ -65,9 +66,10 @@ public class ConexionSQL {
                 String genero = myRs.getString("genero");
                 int permisosSuperiores = myRs.getInt("permisosSuperiores");
                 int permisosUsuario = myRs.getInt("permisosUsuario");
+                String sucursalAsociada = myRs.getString("sucursales");
 
                 banco.agregarPersona(nombre,apellido,rut,ciudad,direccion,correoElectronico,telefono,nacionalidad,
-                        annoNacimiento,mesNacimiento,diaNacimiento,estadoCivil,genero,contrasena);
+                        annoNacimiento,mesNacimiento,diaNacimiento,estadoCivil,genero,contrasena, sucursalAsociada);
 
                 if(permisosUsuario == 1)
                     banco.otorgarPermisosUsuarioCarga(rut);
@@ -76,6 +78,29 @@ public class ConexionSQL {
             }
         }
         catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Metodo que carga las sucursales de la base de datos y las
+     * almacena en el mapa de sucursales.
+     */
+    public void cargarSucursales(Banco banco){
+        try{
+            ResultSet myRs = myStmt.executeQuery("SELECT * FROM sucursales");
+            while(myRs.next()){
+                String nombre = myRs.getString("nombreSucursal");
+                String direccion = myRs.getString("direccionSucursal");
+                int codigo = myRs.getInt("numeroSucursal");
+
+                banco.agregarSucursal(nombre, direccion, codigo);
+                System.out.println("Sucursal cargada: \n" +
+                        "Codigo: " + codigo + "\n" +
+                        "Direccion: " + direccion + "\n" +
+                        "Nombre: " + nombre + "\n");
+            }
+        }catch (Exception e){
             e.printStackTrace();
         }
     }
@@ -187,8 +212,8 @@ public class ConexionSQL {
             System.out.println("Agregando a la Persona a SQL");
             myStmt.executeUpdate("INSERT INTO personas VALUES('"+ p.getNombres()+"','"+p.getApellidos()+"','"+p.getRut()+"','"+
                     p.getCiudad()+"','"+p.getDireccion()+"','"+p.getCorreoElectronico()+"','"+p.getTelefono()+"','"+p.getNacionalidad()+"','"+
-                    p.getFechaNacimiento()+"','"+p.getEstadoCivil()+"','"+p.getContrasena()+"','"+p.getSucursalAsociada()+"','"+permisosAdmin+"','"+permisosUser+"','"+
-                    p.getGenero()+"')");
+                    p.getFechaNacimiento()+"','"+p.getEstadoCivil()+"','"+p.getContrasena()+"','"+permisosAdmin+"','"+permisosUser+"','"+
+                    p.getGenero()+"','"+p.getSucursalAsociada()+"')");
             if(permisosUser==1){
                 ArrayList<CuentaBancaria> a = p.getCuentaUsuario().getCuentasBancarias();
                 for(int i = 0; i < a.size(); i++){
@@ -202,6 +227,18 @@ public class ConexionSQL {
             return false;
         }
 
+    }
+
+    public boolean agregarSucursalSQL(Sucursal sucursal){
+        try{
+            myStmt.executeUpdate("INSERT INTO sucursales VALUES("+sucursal.getCodigoSucursal()+", '" +
+                    sucursal.getNombreSucursal() + "', '" + sucursal.getDireccionSucursal() + "')");
+            return true;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean agregarCuentaBancariaSQL(CuentaBancaria cuentaBancaria){
@@ -343,7 +380,8 @@ public class ConexionSQL {
                     "email = '" + persona.getCorreoElectronico() + "', " +
                     "telefono = " + persona.getTelefono() + ", " +
                     "estadoCivil = '" + persona.getEstadoCivil() + "', " +
-                    "nacionalidad = '" + persona.getNacionalidad() + "' WHERE rut = '" + persona.getRut() + "'");
+                    "nacionalidad = '" + persona.getNacionalidad() + "', " +
+                    "sucursales = '" + persona.getSucursalAsociada() + "' WHERE rut = '" + persona.getRut() + "'");
         }catch(Exception ignored){}
     }
 
@@ -351,14 +389,27 @@ public class ConexionSQL {
         try{
             myStmt.executeUpdate("DELETE FROM cuentasBancarias\n" +
                     "WHERE numeroCuenta = '" + identificador + "'");
-        }catch(Exception ignored){}
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void eliminarPersona(String rut){
         try{
             myStmt.executeUpdate("DELETE FROM personas\n" +
                     "WHERE rut = '" + rut + "'");
-        }catch(Exception ignored){}
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void eliminarSucursalSQL(String nombre){
+        try{
+            myStmt.executeUpdate("DELETE FROM sucursales\n"+
+                    "WHERE nombreSucursal = '" + nombre + "'");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 
