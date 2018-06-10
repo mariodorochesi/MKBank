@@ -14,8 +14,10 @@ import java.util.ArrayList;
 
 public class ConexionSQL {
 
+    //Conexion que se establece
     private  Connection myConn;
 
+    //Statement a generar
     private  Statement myStmt;
 
     /**

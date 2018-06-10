@@ -66,6 +66,10 @@ public class Persona{
         this.cuentaUsuario = null;
     }
 
+    /**
+     *Sobrecarga del Contructor Anterior que permite crear un nuevo objeto Persona
+     */
+
     public Persona(String nombre , String apellidos, String rut, String ciudad ,
                    String direccion , String correoElectronico,
                    String telefono, String nacionalidad, int annoNacimiento,
@@ -90,7 +94,7 @@ public class Persona{
 
 
     /*
-    *   Setters y Getters
+    *   Seccion con Setters y Getters
     * */
 
     public String getNombres() {
@@ -165,11 +169,6 @@ public class Persona{
         this.estadoCivil = estadoCivil;
     }
 
-    /*
-    public String getContrasena() {
-        return contrasena;
-    }
-    */
 
     public boolean contrasenaEquals(String contrasena){
         return this.contrasena.equals(contrasena);
@@ -236,6 +235,7 @@ public class Persona{
     public void setCuentaUsuario(CuentaUsuario cuentaUsuario) {
         this.cuentaUsuario = cuentaUsuario;
     }
+
     public String getContrasena() {
         return contrasena;
     }

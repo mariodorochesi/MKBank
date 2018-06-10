@@ -357,7 +357,7 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
      * permitiendo limpiar la pantalla y mostrar la que corresponde.
      */
     public void goReport(ActionEvent event){
-        updateReporte(banco);
+        updateReporte(banco.obtenerSucursal(cuentaEjecutivo.getPersona().getSucursalAsociada()));
         ap_Report.setVisible(true);
         ap_EditUser.setVisible(false);
         ap_NewUser.setVisible(false);

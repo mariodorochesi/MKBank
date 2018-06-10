@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleStringProperty;
 
 public class DineroPorCiudadYClientes extends RecursiveTreeObject{
 
+
     private SimpleStringProperty ciudad;
     private SimpleStringProperty monto;
     private SimpleStringProperty cclientes;

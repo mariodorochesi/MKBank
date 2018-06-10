@@ -180,15 +180,15 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
     // Labels necesarios:
     @FXML
-    private Label lb_totalClientes;
+    private Label lb_1;
     @FXML
-    private Label lb_totalCuentasBancarias;
+    private Label lb_2;
     @FXML
-    private Label lb_totalValor;
+    private Label lb_3;
     @FXML
-    private Label lb_ciudadMasValor;
+    private Label lb_4;
     @FXML
-    private Label lb_ciudadMenosValor;
+    private Label lb_5;
 
     private String rutBuscadoGiro;
     private String rutBuscado;
@@ -924,17 +924,17 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
         treeTableViewReporteCiudad.setShowRoot(false);
 
-        lb_totalClientes.setText        ("T. Clientes:\t\t" + banco.totalclientes());
-        lb_totalCuentasBancarias.setText("T. Cuentas B:\t\t" + banco.cantidadCuentasBancarias());
-        lb_totalValor.setText           ("T. Valor:\t\t\t" + totalValor);
-        lb_ciudadMasValor.setText       ("C. Mas Valor:\t\t" + ciudadMasAdinerada + " (" + ciudadMasAdinerada_valor + ")");
-        lb_ciudadMenosValor.setText     ("C. Menos Valor:\t" + ciudadMenosAdinerada + " (" + ciudadMenosAdinerada_valor + ")");
+        lb_1.setText("T. Clientes:\t\t" + banco.totalclientes());
+        lb_2.setText("T. Cuentas B:\t\t" + banco.cantidadCuentasBancarias());
+        lb_3.setText("C. Mas Valor:\t\t" + ciudadMasAdinerada + " (" + ciudadMasAdinerada_valor + ")");
+        lb_4.setText("C. Menos Valor:\t" + ciudadMenosAdinerada + " (" + ciudadMenosAdinerada_valor + ")");
+        lb_5.setText("T. Valor:\t\t\t" + totalValor);
 
         reportLines.add("T. Clientes," + banco.totalclientes());
         reportLines.add("T. Cuentas B,\t\t" + banco.cantidadCuentasBancarias());
-        reportLines.add("T. Valor,\t\t\t" + totalValor);
         reportLines.add("C. Mas Valor,\t\t" + ciudadMasAdinerada + "," + ciudadMasAdinerada_valor);
         reportLines.add("C. Menos Valor,\t" + ciudadMenosAdinerada + "," + ciudadMenosAdinerada_valor);
+        reportLines.add("T. Valor,\t\t\t" + totalValor);
     }
 
     /**

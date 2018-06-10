@@ -214,7 +214,7 @@
             </AnchorPane>
             <AnchorPane fx:id="ap_Report" GridPane.columnIndex="1">
                <children>
-                  <ScatterChart fx:id="scatterChart" layoutX="14.0" layoutY="21.0" prefHeight="241.0" prefWidth="500.0" title="Grafico Dinero vs Ciudad (En millones de pesos)" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                  <ScatterChart fx:id="scatterChart" layoutX="14.0" layoutY="21.0" prefHeight="241.0" prefWidth="500.0" title="Dinero vs Personas" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
                     <xAxis>
                       <CategoryAxis animated="false" side="BOTTOM" />
                     </xAxis>
@@ -228,9 +228,10 @@
                   <Label fx:id="lb_4" layoutX="541.0" layoutY="330.0" text="Ciudad menos adinerada" />
                   <JFXTreeTableView fx:id="treeTableViewReporteCiudad" layoutX="14.0" layoutY="279.0" prefHeight="249.0" prefWidth="520.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="280.0">
                      <columns>
-                        <TreeTableColumn prefWidth="75.0" text="Ciudad" />
-                        <TreeTableColumn prefWidth="75.0" text="Dinero total" />
-                        <TreeTableColumn prefWidth="131.0" text="Clientes" />
+                        <TreeTableColumn prefWidth="75.0" text="Rut" />
+                        <TreeTableColumn prefWidth="75.0" text="Nombre" />
+                        <TreeTableColumn prefWidth="131.0" text="Dinero Total" />
+                        <TreeTableColumn prefWidth="75.0" text="N° Cuentas" />
                      </columns>
                      <columnResizePolicy>
                         <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

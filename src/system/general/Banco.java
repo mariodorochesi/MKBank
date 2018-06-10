@@ -47,14 +47,17 @@ public class Banco implements Reportable {
 
     private Saver saver;
 
-
+    //Constante Identificador Ejecutivo
     public static final int PERMISO_EJECUTIVO = 1;
+    //Constante Identificador Administrador
     public static final int PERMISO_ADMINISTRADOR = 2;
+    //Constante Identificador SuperAdministrador
     public static final int PERMISO_SUPERADMINISTRADOR = 3;
 
     /**
      * Constructor por defecto del Banco
      */
+
     public Banco(){
         this.tasaInteres = 0;
         this.tasaInteresPrestamo = 0;
@@ -535,6 +538,7 @@ public class Banco implements Reportable {
      * @param direccion     - Direccion de la sucursal que se esta agregando
      * @param codigo        - Codigo de la sucursal que se esta agregando
      */
+
     public void agregarSucursal(String nombre, String direccion, int codigo){
         // TODO: esto deberia agregar una nueva sucursal al mapa de sucursales con los parametros ignresados
         mapaSucursales.agregarSucursal(nombre, direccion, codigo);
@@ -546,6 +550,7 @@ public class Banco implements Reportable {
      * @param nombre        - Nombre de la nueva sucursal
      * @param direccion     - Direccion de la nueva sucursal
      */
+
     public void agregarSucursal(String nombre, String direccion){
         mapaSucursales.agregarSucursal(nombre, direccion, mapaSucursales.generarIdentificador());
         lastError = mapaSucursales.getLastError();
@@ -553,6 +558,11 @@ public class Banco implements Reportable {
         // Agregando la sucursal a la base de datos
         saver.agregarSucursalSQL(mapaSucursales.obtenerSucursal(nombre));
     }
+
+    /**
+     * Metodo que elimina una sucursal del Banco, verificando previamente que esta exista
+     * @param nombre Nombre de la sucursal a eliminar
+     */
 
     public void eliminarSucursal(String nombre){
         if(!mapaSucursales.existeSucursal(nombre)){
@@ -567,12 +577,34 @@ public class Banco implements Reportable {
 
     }
 
+    /**
+     * Metodo que retorna una Sucursal en Caso de Existir
+     * @param nombre Nombre de la sucursal a retornar
+     * @return Sucursal en caso de existir, false en caso contrario
+     */
+
+    public Sucursal obtenerSucursal(String nombre){
+        return mapaSucursales.obtenerSucursal(nombre);
+    }
+
+    /**
+     * Metodo que permite agregar permisos de usuario a una Persona al cargarlo
+     * @param rut Rut de la Persona
+     */
+
     public void otorgarPermisosUsuarioCarga(String rut){
         if(mapaPersonas.existePersona(rut)){
             Persona persona = mapaPersonas.obtenerPersona(rut);
             persona.setCuentaUsuario(new CuentaUsuario(persona));
         }
     }
+
+    /**
+     * Metodo que permite otorgar permisos superiores a una Persona al cargarlo
+     * desde la Base de Datos
+     * @param permisos ID del permiso a Cargar
+     * @param rut Rut de la Persona
+     */
 
     public void otorgarPermisosSuperioresCarga(int permisos,String rut){
         if(mapaPersonas.existePersona(rut)){
@@ -588,6 +620,11 @@ public class Banco implements Reportable {
         }
     }
 
+    /**
+     * Metodo que otorgar permisos al Usuario (Fuera de la Carga de la Base de Datos)
+     * @param rut Rut de la Persona
+     */
+
     public void otorgarPermisosUsuario(String rut){
         if(mapaPersonas.existePersona(rut)){
             Persona persona = mapaPersonas.obtenerPersona(rut);
@@ -595,6 +632,12 @@ public class Banco implements Reportable {
             persona.setCuentaUsuario(new CuentaUsuario(persona));
         }
     }
+
+    /**
+     * Metodo que otorgar Permisos superiores a una Persona (Fuera de la Carga de la Base de Datos)
+     * @param permisos ID permisos superiores
+     * @param rut Rut de la Persona
+     */
 
     public void otorgarPermisosSuperiores(int permisos,String rut){
         if(mapaPersonas.existePersona(rut)){
@@ -611,6 +654,11 @@ public class Banco implements Reportable {
         }
     }
 
+    /**
+     * Metodo que reocoa los Permisos Superiores a una Persona
+     * @param rut Rut de la Përsona
+     */
+
     public void revocarPermisosSuperiores(String rut){
         if(mapaPersonas.existePersona(rut)){
             Persona persona = mapaPersonas.obtenerPersona(rut);
@@ -621,6 +669,16 @@ public class Banco implements Reportable {
             System.out.println("Permisos revocados y actualizados en la BD");
         }
     }
+
+    /**
+     * Metodo en donde un SuperAdministrador agrega una Cuenta Bancaria a un Usuario determinado
+     * Se agrega la cuenta al mapa de cuentas del Usuario y ademas se
+     * @param cuentaSuperAdministrador
+     * @param cuentaUsuario
+     * @param tipoCuentaBancaria
+     * @param identificador
+     * @param monto
+     */
 
     public void agregarCuentaBancaria(CuentaSuperAdministrador cuentaSuperAdministrador,
                                       CuentaUsuario cuentaUsuario,
@@ -643,6 +701,7 @@ public class Banco implements Reportable {
      * @param cuentaUsuario Usuario a quien se le crea la cuenta Bancaria
      * @param tipoCuentaBancaria Tipo de cuenta a ser creada
      */
+
     public void agregarCuentaBancaria(CuentaSuperAdministrador cuentaSuperAdministrador,
                                       CuentaUsuario cuentaUsuario,
                                       String tipoCuentaBancaria)
@@ -664,6 +723,7 @@ public class Banco implements Reportable {
      * @param cuentaUsuario Usuario a quien se le crea la cuenta Bancaria
      * @param tipoCuentaBancaria Tipo de cuenta a ser creada
      */
+
     public void agregarCuentaBancaria(CuentaAdministrador cuentaAdministrador,
                                       CuentaUsuario cuentaUsuario,
                                       String tipoCuentaBancaria)
@@ -688,6 +748,7 @@ public class Banco implements Reportable {
      * @param cuentaUsuario Usuario a quien se le crea la cuenta Bancaria
      * @param tipoCuentaBancaria Tipo de cuenta a ser creada
      */
+
     public void agregarCuentaBancaria(CuentaEjecutivo cuentaEjecutivo,
                                       CuentaUsuario cuentaUsuario,
                                       String tipoCuentaBancaria)
@@ -787,6 +848,7 @@ public class Banco implements Reportable {
      * @param identificador     Identificador de la cuenta bancaria a depositar
      * @param monto             Monto a depositar
      */
+
     public void depositarCuentaBancaria(CuentaEjecutivo cuentaEjecutivo,
                                         long identificador,
                                         int monto)
@@ -809,6 +871,7 @@ public class Banco implements Reportable {
      * @param identificador     Identificador de la cuenta bancaria a la que se va a retirar dinero
      * @param monto             Monto a retirar
      */
+
     public void retirarCuentaBancaria(CuentaEjecutivo cuentaEjecutivo,
                                       long identificador,
                                       int monto){
@@ -834,6 +897,7 @@ public class Banco implements Reportable {
      * @param monto                         Monto a transferir
      * @return                              Retorna true si la transferencia se realizo satisfactoriamente
      */
+
     public boolean transferirDinero(CuentaBancaria cuentaBancaria ,
                                     long identificadorCuentaDestino,
                                     String tipoCuenta,
@@ -884,6 +948,12 @@ public class Banco implements Reportable {
         }
     }
 
+    /**
+     * Metodo que agrega una Transferencia a cada uno de los Usuarios (En carga de SQL)
+     * @param id Id de la transferencia
+     * @param t Transferencia a Cargar
+     */
+
     public void agregarTransferencia(long id,Transferencias t){
         mapaTransferencias.agregarTranferencia(id,t);
         CuentaUsuario origen = isUsuarioOnBanco(t.getRutOriginario());
@@ -894,9 +964,7 @@ public class Banco implements Reportable {
             destino.agregarTransferencia(t);
     }
 
-    /*
-     *   Metodos por hacer
-     * */
+
     public boolean agregarCuentaPersona(CuentaSuperAdministrador cuentaSuperAdministrador , Persona persona, String cuentaAgregar){
         if(cuentaAgregar.equals("Cuenta SuperAdministrador")){
             System.out.println(cuentaSuperAdministrador.getPersona().getNombres() + " " + cuentaSuperAdministrador.getPersona().getApellidos()
@@ -1173,6 +1241,13 @@ public class Banco implements Reportable {
             }
         }
     }
+
+    /**
+     * Metodo que permite obtener la lista de las ultimas N transferencias de un Usiarop
+     * @param usuario Usuario
+     * @param cantidadMostrar Cantidad de Transfernecias a Mostrar
+     * @return Retorna un ArrayList con las ultimas N transferencias
+     */
 
     public ArrayList<Transferencias> obtenerListaTransferencia(CuentaUsuario usuario , int cantidadMostrar){
         return usuario.historialTransacciones(cantidadMostrar);
@@ -1674,6 +1749,7 @@ public class Banco implements Reportable {
      * Retorna la cantidad total de cuentas bancarias en el Banco
      * @return
      */
+
     public int cantidadCuentasBancarias(){
         return mapaCuentaBancarias.values().size();
     }
@@ -1683,6 +1759,7 @@ public class Banco implements Reportable {
      * @param ciudad
      * @return
      */
+
     public int totalclientesEnCiudad(String ciudad){
         int total = 0;
 
@@ -1698,6 +1775,7 @@ public class Banco implements Reportable {
      * Retornala cantidad total de clientes (usuarios) en el Banco
      * @return
      */
+
     public int totalclientes(){
         int total = 0;
 
@@ -1744,6 +1822,12 @@ public class Banco implements Reportable {
     public SucursalTreeTableView[] obtenerSucursalesForTable(){
         return mapaSucursales.getSucursalesForTable();
     }
+
+
+    /**
+     * Metodo que sobreescribe el metodo de la Interfaz Reportable, que genera un reporte con todos los datos
+     * del banco
+     */
 
     @Override
     public void generarReporte(ArrayList<String> reportLines, ScatterChart grafico, JFXTreeTableView tabla,

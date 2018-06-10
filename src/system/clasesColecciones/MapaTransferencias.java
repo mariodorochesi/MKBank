@@ -8,33 +8,64 @@ import java.util.Random;
 
 public class MapaTransferencias implements Identificador {
 
-    private HashMap<Long ,Transferencias> mapaTransferencias;
+    //HashMap con las Transferencias
+    private HashMap<Long, Transferencias> mapaTransferencias;
+    //Generador de identificador
     private Random generadorIdentificadores;
+
+    /**
+     * Constructor de Mapa Transfernecias
+     */
 
     public MapaTransferencias(){
         mapaTransferencias = new HashMap<>();
         generadorIdentificadores = new Random();
     }
 
+    /**
+     * Metood que agrega una Transferencia al mapa
+     * @param identificador Identificador de la Transferencia
+     * @param transferencia Transferencia a agregar
+     */
+
     public void agregarTranferencia(long identificador,Transferencias transferencia){
         mapaTransferencias.put(identificador,transferencia);
     }
 
-    public void agregarTransferencia(long id,Transferencias t){
-        mapaTransferencias.put(id,t);
-    }
+    /**
+     * Metodo que verifica si existe la transferencia en el mapa
+     * @param identificador Identificador de la Transferencia
+     * @return True si pudo encontra la transferencia false en caso contrario
+     */
 
     public boolean existeTransferencia(long identificador){
         return mapaTransferencias.get(identificador) != null;
     }
 
+    /**
+     * Metodo que elimina una Transferencia
+     * @param identificador Identificador de la Transferencia
+     * @return True si pudo eliminarla, False en caso contrario
+     */
+
     public boolean eliminarCuentaBancaria(long identificador){
         return mapaTransferencias.remove(identificador) != null;
     }
 
+    /**
+     * Metodo que retorna una Transferencia en caso de existir
+     * @param identificador Identificador de la Transferencia
+     * @return La transferencia en caso de que exista, False en caso contrario
+     */
+
     public Transferencias obtenerTransferencia(long identificador){
         return mapaTransferencias.get(identificador);
     }
+
+    /**
+     * Metodo que genera un identificador unico de 9 digitos para la transferencia
+     * @return El identificador de 9 digitos
+     */
 
     @Override
     public long generarIdentificador(){

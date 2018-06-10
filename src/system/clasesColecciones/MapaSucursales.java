@@ -12,7 +12,9 @@ public class MapaSucursales implements Identificador{
 
     // NOTA: La key de la sucursal es el nombre
     private HashMap<String , Sucursal> mapaSucursales;
+    // Generador de Identificador de Sucursales
     private Random generadorIdentificadores;
+    // Ultimo error generado
     private String lastError;
 
     public MapaSucursales(){
@@ -26,6 +28,7 @@ public class MapaSucursales implements Identificador{
      * @param direccion - Direccion de la nueva sucursal.
      * @param codigo    - Codigo (Generado con generarIdentificador).
      */
+
     public void  agregarSucursal(String nombre , String direccion, long codigo){
         if(mapaSucursales.get(nombre) == null) {
             Sucursal sucursalAgregar = new Sucursal(nombre , direccion , codigo);
@@ -42,6 +45,7 @@ public class MapaSucursales implements Identificador{
      * @param nombre    - Nombre de la sucursal que se quiere buscar.
      * @return          - Retorna la sucursal que contenga ese noombre.
      */
+
     public Sucursal obtenerSucursal(String nombre){
         return mapaSucursales.get(nombre);
     }
@@ -50,6 +54,7 @@ public class MapaSucursales implements Identificador{
      * Elimina una sucursal siempre que existe y que no tenga personas asociadas.
      * @param nombre    - Nombre de la sucursal a eliminar
      */
+
     public boolean eliminarSucursal(String nombre) {
         if(mapaSucursales.get(nombre) == null) {
             lastError = "La sucursal no existe";
@@ -71,9 +76,15 @@ public class MapaSucursales implements Identificador{
      * @param nombre    - Nombre de la sucursal que se quiere comprobar si existe.
      * @return          - Retorna true si existe la sucursal y false en caso contrario.
      */
+
     public boolean existeSucursal(String nombre){
         return mapaSucursales.get(nombre) != null;
     }
+
+    /**
+     * Genera un identificador unico de 9 digitos para la sucursal, implementando la interfaz identificador
+     * @return Identificador unico
+     */
 
     @Override
     public long generarIdentificador(){
@@ -87,6 +98,10 @@ public class MapaSucursales implements Identificador{
         return identificador;
     }
 
+    /**
+     * Metodo para obtener todos los nombres de las sucursales
+     * @return Retorna un arreglo de String, con los nombres de las sucursales
+     */
     public String[] obtenerNombresSucursales(){
         ArrayList<String> nombres = new ArrayList<>();
 
@@ -96,6 +111,12 @@ public class MapaSucursales implements Identificador{
         String[] caster = new String[nombres.size()];
         return nombres.toArray(caster);
     }
+
+    /**
+     * Metodo que retorna un arreglo de SucursalTreeTableView. necesario para generar
+     * la seccion de sucursales, en la interfaz del Administrador
+     * @return arreglo de SucursalTreeTableView
+     */
 
     public SucursalTreeTableView[] getSucursalesForTable(){
         ArrayList<SucursalTreeTableView> sucursalesOnTree = new ArrayList<>();
@@ -111,6 +132,11 @@ public class MapaSucursales implements Identificador{
         SucursalTreeTableView[] caster = new SucursalTreeTableView[sucursalesOnTree.size()];
         return sucursalesOnTree.toArray(caster);
     }
+
+    /**
+     *  Metodo que retorna el ultimo error generado
+     * @return String con el ultimo error
+     */
 
     public String getLastError(){
         return lastError;

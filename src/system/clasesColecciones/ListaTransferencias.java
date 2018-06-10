@@ -61,15 +61,23 @@ public class ListaTransferencias {
 
     }
 
+    /**
+     * Sobrecarga del metodo anterior, agrega una transferencia a la lista de transferencias
+     * @param t Transferencia a agregar
+     * @return Verdadero si pudo agregar o falso en caso contrario
+     */
+
     public boolean agregarTransferencia(Transferencias t){
         return listaTransferencias.add(t);
     }
+
 
     /**
      * Retorna las ultimas N transferencias, para poder realizar un historial de transferencias del Usuario
      * @param cantidadMostrar Cantidad de N ultimas transacciones a mostrar
      * @return
      */
+
     public ArrayList<Transferencias> historialTransacciones(int cantidadMostrar){
         if(cantidadMostrar >= listaTransferencias.size() || cantidadMostrar == 0){
             return listaTransferencias;

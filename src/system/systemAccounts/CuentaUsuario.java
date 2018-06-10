@@ -227,4 +227,8 @@ public  class CuentaUsuario extends Cuenta {
     public void setNumeroCuentas(short numeroCuentas) {
         this.numeroCuentas = numeroCuentas;
     }
+
+    public long obtenerDineroTotal(){
+        return mapaCuentasBancarias.obtenerDineroTotal();
+    }
 }

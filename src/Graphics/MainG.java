@@ -34,7 +34,7 @@ public class MainG extends Application {
             System.exit(-1);
         }
         loader =  new Loader(banco, conexionSQL);
-        Saver saver = new Saver(banco, conexionSQL);
+        Saver saver = new Saver(conexionSQL);
         banco.setSaver(saver);
     }
 
