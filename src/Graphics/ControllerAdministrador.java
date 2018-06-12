@@ -213,12 +213,7 @@ public class ControllerAdministrador extends AbstractController implements Initi
         comboBox_cuentaBancariaInicial.getItems().addAll("Cuenta Vista", "Cuenta Corriente", "Cuenta Ahorro");
         comboBox_nuevaCuentaBancaria.getItems().addAll(comboBox_cuentaBancariaInicial.getItems());
 
-        comboBox_sucursalAsociada.getItems().removeAll(comboBox_sucursalAsociada.getItems());
-        comboBox_sucursalAsociada.getItems().addAll(banco.obtenerNombresSucursales());
-
-        comboBox_sucursalAsociada1.getItems().removeAll(comboBox_sucursalAsociada.getItems());
-        comboBox_sucursalAsociada1.getItems().addAll(banco.obtenerNombresSucursales());
-
+        updateSucursalesOnComboBox();
         updateSucursalesOnTreeTableView();
 
         reportLines = new ArrayList<>();
@@ -492,57 +487,70 @@ public class ControllerAdministrador extends AbstractController implements Initi
         final boolean encontrado = persona != null;
         rutBuscado = rut;
 
-        if(encontrado) {
-            final String celular = persona.getTelefono();
-            final String nombres = persona.getNombres();
-            final String apellidos = persona.getApellidos();
-            final String ciudad = persona.getCiudad();
-            final String bRut = persona.getRut().substring(
-                    persona.getRut().length() - 1);
-            final String direccion = persona.getDireccion();
-            final String correo = persona.getCorreoElectronico();
-            final String estadoCivil = persona.getEstadoCivil();
-            final LocalDate nacimiento = persona.getFechaNacimiento();
-            final String nacionalidad = persona.getNacionalidad();
-            final String sucursalAsociada = persona.getSucursalAsociada();
-
-            final boolean hombre = persona.getGenero().equals("Hombre");
-
-            // Setenado valores
-            tf_nombres1.setText(nombres.toUpperCase());
-            tf_apellidos1.setText(apellidos.toUpperCase());
-            tf_ciudad1.setText(ciudad.toUpperCase());
-            tf_direccion1.setText(direccion.toUpperCase());
-            dp_fechaNacimiento1.setValue(nacimiento);
-            tf_rut1.setText(rut.substring(0, rut.length()-2));
-            tf_rutDB1.setText(bRut);
-            tf_celular1.setText(celular);
-            tf_correo1.setText(correo);
-            comboBox_estadoCivil1.setValue(estadoCivil);
-            cb_hombre1.setSelected(hombre);
-            cb_mujer1.setSelected(!hombre);
-            tf_nacionalidad1.setText(nacionalidad.toUpperCase());
-            comboBox_sucursalAsociada1.setValue(sucursalAsociada);
-
-            tb_permisosEjecutivo.setSelected(banco.contieneCuentaEjecutivo(rut));
-            tb_permisosUsuario.setSelected(banco.contieneCuentaUsuario(rut));
-
-            if(banco.contieneCuentaUsuario(rut)) {
-                treeTableView.setDisable(false);
-                b_eliminarCuentaBancaria.setDisable(false);
-                b_nuevaCuentaBancaria.setDisable(false);
-                comboBox_nuevaCuentaBancaria.setDisable(false);
-                comboBox_cuentaBancariaEliminar.setDisable(false);
-                updateTreeViewUserAccounts(persona.getCuentaUsuario());
-                updateComboBoxCuentasBancarias(persona.getCuentaUsuario());
+        if(encontrado){
+            if(banco.getPermisos(persona) > banco.getPermisos(cuentaAdministrador.getPersona())){
+                generateDialog("Error" , "No puede modificar a personas con permisos superiores a los suyos.");
+                return true;
             }
-            else{
-                treeTableView.setDisable(true);
-                b_eliminarCuentaBancaria.setDisable(true);
-                b_nuevaCuentaBancaria.setDisable(true);
-                comboBox_nuevaCuentaBancaria.setDisable(true);
-                comboBox_cuentaBancariaEliminar.setDisable(true);
-                clearTreeViewUserAccounts();
+        }
+
+        if(cuentaAdministrador.getPersona().getRut().equals(rut)){
+            generateDialog("Error" , "No se puede modificar a su misma persona.");
+            return true;
+        }
+        else {
+
+            if (encontrado) {
+                final String celular = persona.getTelefono();
+                final String nombres = persona.getNombres();
+                final String apellidos = persona.getApellidos();
+                final String ciudad = persona.getCiudad();
+                final String bRut = persona.getRut().substring(
+                        persona.getRut().length() - 1);
+                final String direccion = persona.getDireccion();
+                final String correo = persona.getCorreoElectronico();
+                final String estadoCivil = persona.getEstadoCivil();
+                final LocalDate nacimiento = persona.getFechaNacimiento();
+                final String nacionalidad = persona.getNacionalidad();
+                final String sucursalAsociada = persona.getSucursalAsociada();
+
+                final boolean hombre = persona.getGenero().equals("Hombre");
+
+                // Setenado valores
+                tf_nombres1.setText(nombres.toUpperCase());
+                tf_apellidos1.setText(apellidos.toUpperCase());
+                tf_ciudad1.setText(ciudad.toUpperCase());
+                tf_direccion1.setText(direccion.toUpperCase());
+                dp_fechaNacimiento1.setValue(nacimiento);
+                tf_rut1.setText(rut.substring(0, rut.length() - 2));
+                tf_rutDB1.setText(bRut);
+                tf_celular1.setText(celular);
+                tf_correo1.setText(correo);
+                comboBox_estadoCivil1.setValue(estadoCivil);
+                cb_hombre1.setSelected(hombre);
+                cb_mujer1.setSelected(!hombre);
+                tf_nacionalidad1.setText(nacionalidad.toUpperCase());
+                comboBox_sucursalAsociada1.setValue(sucursalAsociada);
+
+                tb_permisosEjecutivo.setSelected(banco.contieneCuentaEjecutivo(rut));
+                tb_permisosUsuario.setSelected(banco.contieneCuentaUsuario(rut));
+
+                if (banco.contieneCuentaUsuario(rut)) {
+                    treeTableView.setDisable(false);
+                    b_eliminarCuentaBancaria.setDisable(false);
+                    b_nuevaCuentaBancaria.setDisable(false);
+                    comboBox_nuevaCuentaBancaria.setDisable(false);
+                    comboBox_cuentaBancariaEliminar.setDisable(false);
+                    updateTreeViewUserAccounts(persona.getCuentaUsuario());
+                    updateComboBoxCuentasBancarias(persona.getCuentaUsuario());
+                } else {
+                    treeTableView.setDisable(true);
+                    b_eliminarCuentaBancaria.setDisable(true);
+                    b_nuevaCuentaBancaria.setDisable(true);
+                    comboBox_nuevaCuentaBancaria.setDisable(true);
+                    comboBox_cuentaBancariaEliminar.setDisable(true);
+                    clearTreeViewUserAccounts();
+                }
             }
         }
 
@@ -756,6 +764,7 @@ public class ControllerAdministrador extends AbstractController implements Initi
             comboBox_cuentaBancariaEliminar.getItems().add(cuentaBancaria.getIdentificador());
     }
 
+
     /**
      * Genera un dialogo en pantalla lo que permite mostrar errores y otros
      * mensajes
@@ -778,11 +787,15 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
     /**
      * Realiza una busqueda para realizar un deposito o retiro de dinero
-     * @param event evento generado al precionar el boton de buscar
      */
-    public void searchUserGiro(ActionEvent event){
+    public void searchUserGiro(){
         rutBuscadoGiro = tf_searchRutGiro.getText();
         CuentaUsuario cuentaUsuario = banco.isUsuarioOnBanco(rutBuscadoGiro);
+
+        if(cuentaUsuario != null && cuentaUsuario.getPersona().getRut().equals(cuentaAdministrador.getPersona().getRut())){
+            generateDialog("Error" , "No puede modificar sus propios montos. Intentelo con otra persona.");
+            return;
+        }
 
         if(cuentaUsuario != null){
             comboBox_cuentaBancariaGiro.getItems().removeAll(comboBox_cuentaBancariaGiro.getItems());
@@ -793,7 +806,17 @@ public class ControllerAdministrador extends AbstractController implements Initi
         else{
             comboBox_cuentaBancariaGiro.getItems().removeAll(comboBox_cuentaBancariaGiro.getItems());
             setVisibleGiroItems(false);
-            generateDialog("Error", "Usuario no encontrado con el rut indicado");
+            generateDialog("Error", "Usuario no encontrado con el rut indicado.");
+        }
+    }
+
+    /**
+     * Realiza una busqueda para realizar un deposito o retiro de dinero
+     * @param event evento generado al precionar el enter de buscar
+     */
+    public void searchUserGiroEnter(KeyEvent event){
+        if (event.getCode().getName().equals("Enter")) {
+            searchUserGiro();
         }
     }
 
@@ -817,17 +840,14 @@ public class ControllerAdministrador extends AbstractController implements Initi
      * seleccionada en el combobox.
      */
     public void hacerDeposito(ActionEvent event){
-        /*
         int monto = Integer.parseInt(tf_montoGirar.getText());
         if(comboBox_cuentaBancariaGiro.getValue() == null){
             generateDialog("Error", "Primero se tiene que seleccionar una cuenta bancaria");
             return;
         }
-        banco.depositarCuentaBancaria(cuentaEjecutivo, (Long) comboBox_cuentaBancariaGiro.getValue(),
+        banco.depositarCuentaBancaria(cuentaAdministrador, (Long) comboBox_cuentaBancariaGiro.getValue(),
                 monto);
         generateDialog(" ", banco.getLastError());
-        */
-        // FIXME: Ojo, el administrador puede hacer depositos y retiros? si es asi falta programar la sobre carga
     }
 
     /**
@@ -835,17 +855,14 @@ public class ControllerAdministrador extends AbstractController implements Initi
      * seleccionada en el combobox.
      */
     public void hacerRetiro(ActionEvent event){
-        /*
         int monto = Integer.parseInt(tf_montoGirar.getText());
         if(comboBox_cuentaBancariaGiro.getValue() == null){
             generateDialog("Error", "Primero se tiene que seleccionar una cuenta bancaria");
             return;
         }
-        banco.retirarCuentaBancaria(cuentaEjecutivo, (Long) comboBox_cuentaBancariaGiro.getValue(),
+        banco.retirarCuentaBancaria(cuentaAdministrador, (Long) comboBox_cuentaBancariaGiro.getValue(),
                 monto);
         generateDialog(" ", banco.getLastError());
-        */
-        // FIXME: Ojo, el administrador puede hacer depositos y retiros? si es asi falta programar la sobre carga
     }
 
     /**
@@ -1006,6 +1023,14 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
     }
 
+    private void updateSucursalesOnComboBox(){
+        comboBox_sucursalAsociada.getItems().removeAll(comboBox_sucursalAsociada.getItems());
+        comboBox_sucursalAsociada.getItems().addAll(banco.obtenerNombresSucursales());
+
+        comboBox_sucursalAsociada1.getItems().removeAll(comboBox_sucursalAsociada.getItems());
+        comboBox_sucursalAsociada1.getItems().addAll(banco.obtenerNombresSucursales());
+    }
+
     public void agregarSucursal(){
         String nombre = tf_nombreNuevaSucursal.getText();
         String direccion = tf_direccionNuevaSucursal.getText();
@@ -1020,6 +1045,7 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
         // Actualizando recursos graficos
         updateSucursalesOnTreeTableView();
+        updateSucursalesOnComboBox();
         tf_nombreNuevaSucursal.clear();
         tf_direccionNuevaSucursal.clear();
 
@@ -1035,6 +1061,7 @@ public class ControllerAdministrador extends AbstractController implements Initi
         }
 
         updateSucursalesOnTreeTableView();
+        updateSucursalesOnComboBox();
     }
 }
 

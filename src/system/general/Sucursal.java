@@ -18,9 +18,6 @@ import system.systemAccounts.CuentaBancariaRecursiveTree;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/*
- *  Esta clase sera implementada en la Entrega B
- * */
 public class Sucursal implements Reportable {
 
     //Mapa de Personas Asociadas a la Sucursal
@@ -112,15 +109,6 @@ public class Sucursal implements Reportable {
     @Override
     public void generarReporte(ArrayList<String> reportLines, ScatterChart grafico,
                                JFXTreeTableView tabla, Label lb1, Label lb2, Label lb3, Label lb4, Label lb5) {
-        /*
-            Grafico: grafico dinero vs cliente
-            Tabla: Cliente - Nombre - Dinero Total - N° de cuentas bancarias
-            Lb1: cantidad de hombres en la sucursal
-            Lb2: Cantidad de mujeres en la sucursal
-            Lb3: Cantidad de ejecutivos
-            Lb4: Cantidad de personas en la sucursal
-            Lb5: Dinero total de la sucursal
-         */
         reportLines.removeAll(reportLines);
         int nHombres = mapaPersonasAsociadas.obtenerNumeroHombres();
         int nMujeres = mapaPersonasAsociadas.obtenerNumeroMujeres();

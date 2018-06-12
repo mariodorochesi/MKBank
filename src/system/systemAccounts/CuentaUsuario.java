@@ -200,6 +200,10 @@ public  class CuentaUsuario extends Cuenta {
         return montoTotal;
     }
 
+    public short obtenerPermisos(){
+        return 1;
+    }
+
     public void saveTransferencias(String rutaArchivo){
         listaTransferencias.saveTransferencias(rutaArchivo);
     }

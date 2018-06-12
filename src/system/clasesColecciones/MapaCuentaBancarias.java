@@ -13,7 +13,7 @@ public class MapaCuentaBancarias implements Identificador {
     private HashMap<Long , CuentaBancaria> mapaCuentasBancarias;
 
     //Generador de identificadores unicos
-    Random generadorIdentificadores;
+    private Random generadorIdentificadores;
 
 
     /**

@@ -253,6 +253,9 @@ public class CuentaSuperAdministrador extends Cuenta {
         return resultado;
     }
 
+    public short obtenerPermisos(){
+        return 4;
+    }
 
     /*
     *   Setters y Getters

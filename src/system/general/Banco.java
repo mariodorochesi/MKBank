@@ -844,6 +844,29 @@ public class Banco implements Reportable {
     /**
      * Metodo que agrega dinero a una Cuenta Bancaria.
      * Este metodo es el que se utiliza cuando una persona va a la sucursal a depositar a una cuenta.
+     * @param cuentaAdministrador  Cuenta ejecutivo que va a hacer el deposito
+     * @param identificador     Identificador de la cuenta bancaria a depositar
+     * @param monto             Monto a depositar
+     */
+
+    public void depositarCuentaBancaria(CuentaAdministrador cuentaAdministrador,
+                                        long identificador,
+                                        int monto){
+        CuentaBancaria cuentaBancaria = isCuentaBancariaOnBanco(identificador);
+        if(cuentaBancaria != null){
+            final boolean resultado = cuentaAdministrador.depositarCuentaBancaria(cuentaBancaria.getPersona().getCuentaUsuario(),identificador,monto);
+            lastError = cuentaAdministrador.getLastError();
+            if(resultado)
+                saver.depositarCuentaSQL(cuentaBancaria,monto);
+        }
+        else{
+            lastError = "La cuenta bancaria no existe en el banco";
+        }
+    }
+
+    /**
+     * Metodo que agrega dinero a una Cuenta Bancaria.
+     * Este metodo es el que se utiliza cuando una persona va a la sucursal a depositar a una cuenta.
      * @param cuentaEjecutivo   Cuenta ejecutivo que va a hacer el deposito
      * @param identificador     Identificador de la cuenta bancaria a depositar
      * @param monto             Monto a depositar
@@ -855,13 +878,39 @@ public class Banco implements Reportable {
     {
         CuentaBancaria cuentaBancaria = isCuentaBancariaOnBanco(identificador);
         if(cuentaBancaria != null){
-            cuentaEjecutivo.depositarCuentaBancaria(cuentaBancaria.getPersona().getCuentaUsuario(),identificador,monto);
+            final boolean resultado = cuentaEjecutivo.depositarCuentaBancaria(cuentaBancaria.getPersona().getCuentaUsuario(),identificador,monto);
             lastError = cuentaEjecutivo.getLastError();
+            if(resultado)
+                saver.depositarCuentaSQL(cuentaBancaria,monto);
         }
         else{
             lastError = "La cuenta bancaria no existe en el banco";
         }
 
+    }
+
+    /**
+     * Metodo que quita dinero de una Cuenta Bancaria.
+     * Este metodo es el que se utiliza cuando una persona va la sucursal a retirar dinero
+     * @param cuentaAdministrador   Cuenta ejecutivo que va a hacer el retiro
+     * @param identificador     Identificador de la cuenta bancaria a la que se va a retirar dinero
+     * @param monto             Monto a retirar
+     */
+
+    public void retirarCuentaBancaria(CuentaAdministrador cuentaAdministrador,
+                                      long identificador,
+                                      int monto){
+
+        CuentaBancaria cuentaBancaria = isCuentaBancariaOnBanco(identificador);
+        if(cuentaBancaria != null){
+            final boolean resultado = cuentaAdministrador.retirarCuentaBancaria(cuentaBancaria.getPersona().getCuentaUsuario(),identificador,monto);
+            lastError = cuentaAdministrador.getLastError();
+            if(resultado)
+                saver.transferirCuentaSQL(cuentaBancaria,monto);
+        }
+        else{
+            lastError = "La cuenta bancaria no existe en el banco";
+        }
     }
 
     /**
@@ -880,6 +929,8 @@ public class Banco implements Reportable {
         if(cuentaBancaria != null){
             final  boolean resultado = cuentaEjecutivo.retirarCuentaBancaria(cuentaBancaria.getPersona().getCuentaUsuario(),identificador,monto);
             lastError = cuentaEjecutivo.getLastError();
+            if(resultado)
+                saver.transferirCuentaSQL(cuentaBancaria,monto);
         }
         else{
             lastError = "La cuenta bancaria no existe en el banco";
@@ -1432,13 +1483,13 @@ public class Banco implements Reportable {
      */
     public short getPermisos(Persona persona){
         if(persona.getCuentaSuperAdministrador() != null)
-            return 4;
+            return persona.getCuentaSuperAdministrador().obtenerPermisos();
         else if(persona.getCuentaAdministrador() != null)
-            return 3;
+            return persona.getCuentaAdministrador().obtenerPermisos();
         else if(persona.getCuentaEjecutivo() != null)
-            return 2;
+            return persona.getCuentaEjecutivo().obtenerPermisos();
         else if(persona.getCuentaUsuario() != null)
-            return 1;
+            return persona.getCuentaUsuario().obtenerPermisos();
         else
             return 0;
     }

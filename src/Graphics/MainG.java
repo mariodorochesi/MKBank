@@ -13,14 +13,12 @@ import system.general.Saver;
 
 public class MainG extends Application {
 
-    // TODO: hace falta un sistema de archivos para guardar los usuarios y cuentas...
-    // TODO: con esto se tiene que crear un metodo banco.cargarBaseDeDatos() o algo asi...
-    // TODO: generar archivos iniciales y probar
-
     private Banco banco;
 
+    //Clase que carga los datos desde la base SQL
     private Loader loader;
 
+    //Conexion que se establece con la base SQL
     private ConexionSQL conexionSQL;
 
     @Override
@@ -60,8 +58,7 @@ public class MainG extends Application {
         ScreenController screenController = new ScreenController(scene);
         AbstractController.setScreenController(screenController);
 
-
-
+        //FIXME: arreglar el encap. de esto
         screenController.addScreen("Login", fxmlLoader.load(getClass().getResource("Login.fxml").openStream()), fxmlLoader.getController());
         fxmlLoader = new FXMLLoader();
         screenController.addScreen("ScreenEjecutivo", fxmlLoader.load(getClass().getResource("ScreenEjecutivo.fxml").openStream()), fxmlLoader.getController());

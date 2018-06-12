@@ -421,46 +421,58 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
      * @param rut   Rut que se va a usar para buscar el usuario
      * @return      Retorna true si es que encuentra un usuario con ese rut, false en caso contrario
      */
-    private boolean searchUser(String rut){
+    private boolean searchUser(String rut) {
         // Buscar en el sistema con el rut y retornar true si lo encuentra
         // Editar los valores de los text field con los datos encontrados
         final CuentaUsuario cuentaUsuario = banco.isUsuarioOnBanco(rut);
         final boolean encontrado = cuentaUsuario != null;
         rutBuscado = rut;
+        if(encontrado){
+            if(banco.getPermisos(cuentaUsuario.getPersona()) > banco.getPermisos(cuentaEjecutivo.getPersona())){
+                generateDialog("Error" , "No puede modificar a personas con permisos superiores a los suyos.");
+                return true;
+            }
+        }
+        if(cuentaEjecutivo.getPersona().getRut().equals(rut)){
+            generateDialog("Error" , "No se puede modificar a su misma persona.");
+            return true;
+        }
+        else {
 
-        if(encontrado) {
-            final String celular = cuentaUsuario.getPersona().getTelefono();
-            final String nombres = cuentaUsuario.getPersona().getNombres();
-            final String apellidos = cuentaUsuario.getPersona().getApellidos();
-            final String ciudad = cuentaUsuario.getPersona().getCiudad();
-            final String bRut = cuentaUsuario.getPersona().getRut().substring(
-                    cuentaUsuario.getPersona().getRut().length() - 1);
-            final String direccion = cuentaUsuario.getPersona().getDireccion();
-            final String correo = cuentaUsuario.getPersona().getCorreoElectronico();
-            final String estadoCivil = cuentaUsuario.getPersona().getEstadoCivil();
-            final LocalDate nacimiento = cuentaUsuario.getPersona().getFechaNacimiento();
-            final String nacionalidad = cuentaUsuario.getPersona().getNacionalidad();
-            final String sucursalAsociada = cuentaUsuario.getPersona().getSucursalAsociada();
+            if (encontrado) {
+                final String celular = cuentaUsuario.getPersona().getTelefono();
+                final String nombres = cuentaUsuario.getPersona().getNombres();
+                final String apellidos = cuentaUsuario.getPersona().getApellidos();
+                final String ciudad = cuentaUsuario.getPersona().getCiudad();
+                final String bRut = cuentaUsuario.getPersona().getRut().substring(
+                        cuentaUsuario.getPersona().getRut().length() - 1);
+                final String direccion = cuentaUsuario.getPersona().getDireccion();
+                final String correo = cuentaUsuario.getPersona().getCorreoElectronico();
+                final String estadoCivil = cuentaUsuario.getPersona().getEstadoCivil();
+                final LocalDate nacimiento = cuentaUsuario.getPersona().getFechaNacimiento();
+                final String nacionalidad = cuentaUsuario.getPersona().getNacionalidad();
+                final String sucursalAsociada = cuentaUsuario.getPersona().getSucursalAsociada();
 
-            final boolean hombre = cuentaUsuario.getPersona().getGenero().equals("Hombre");
+                final boolean hombre = cuentaUsuario.getPersona().getGenero().equals("Hombre");
 
-            // Setenado valores
-            tf_nombres1.setText(nombres.toUpperCase());
-            tf_apellidos1.setText(apellidos.toUpperCase());
-            tf_ciudad1.setText(ciudad.toUpperCase());
-            tf_direccion1.setText(direccion.toUpperCase());
-            dp_fechaNacimiento1.setValue(nacimiento);
-            tf_rut1.setText(rut.substring(0, rut.length()-2));
-            tf_rutDB1.setText(bRut);
-            tf_celular1.setText(celular);
-            tf_correo1.setText(correo);
-            comboBox_estadoCivil1.setValue(estadoCivil);
-            comboBox_sucursalAsociada1.setValue(sucursalAsociada);
-            cb_hombre1.setSelected(hombre);
-            cb_mujer1.setSelected(!hombre);
-            tf_nacionalidad1.setText(nacionalidad.toUpperCase());
-            updateTreeViewUserAccounts(cuentaUsuario);
-            updateComboBoxCuentasBancarias(cuentaUsuario);
+                // Setenado valores
+                tf_nombres1.setText(nombres.toUpperCase());
+                tf_apellidos1.setText(apellidos.toUpperCase());
+                tf_ciudad1.setText(ciudad.toUpperCase());
+                tf_direccion1.setText(direccion.toUpperCase());
+                dp_fechaNacimiento1.setValue(nacimiento);
+                tf_rut1.setText(rut.substring(0, rut.length() - 2));
+                tf_rutDB1.setText(bRut);
+                tf_celular1.setText(celular);
+                tf_correo1.setText(correo);
+                comboBox_estadoCivil1.setValue(estadoCivil);
+                comboBox_sucursalAsociada1.setValue(sucursalAsociada);
+                cb_hombre1.setSelected(hombre);
+                cb_mujer1.setSelected(!hombre);
+                tf_nacionalidad1.setText(nacionalidad.toUpperCase());
+                updateTreeViewUserAccounts(cuentaUsuario);
+                updateComboBoxCuentasBancarias(cuentaUsuario);
+            }
         }
 
         return encontrado;
@@ -688,20 +700,37 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
      * Realiza una busqueda para realizar un deposito o retiro de dinero
      * @param event evento generado al precionar el boton de buscar
      */
-    public void searchUserGiro(ActionEvent event){
+    public void searchUserGiro(){
         rutBuscadoGiro = tf_searchRutGiro.getText();
         CuentaUsuario cuentaUsuario = banco.isUsuarioOnBanco(rutBuscadoGiro);
 
-        if(cuentaUsuario != null){
-            comboBox_cuentaBancariaGiro.getItems().removeAll(comboBox_cuentaBancariaGiro.getItems());
-            for(CuentaBancaria c : cuentaUsuario.getCuentasBancarias())
-                comboBox_cuentaBancariaGiro.getItems().add(c.getIdentificador());
-            setVisibleGiroItems(true);
+        if(cuentaUsuario != null && cuentaUsuario.getPersona().getRut().equals(cuentaEjecutivo.getPersona().getRut())){
+            generateDialog("Error", "No puede modiicar sus propios montos. Intentelo con otra persona");
+            return;
         }
-        else{
-            comboBox_cuentaBancariaGiro.getItems().removeAll(comboBox_cuentaBancariaGiro.getItems());
-            setVisibleGiroItems(false);
-            generateDialog("Error", "Usuario no encontrado con el rut indicado");
+
+        else {
+
+            if (cuentaUsuario != null) {
+                comboBox_cuentaBancariaGiro.getItems().removeAll(comboBox_cuentaBancariaGiro.getItems());
+                for (CuentaBancaria c : cuentaUsuario.getCuentasBancarias())
+                    comboBox_cuentaBancariaGiro.getItems().add(c.getIdentificador());
+                setVisibleGiroItems(true);
+            } else {
+                comboBox_cuentaBancariaGiro.getItems().removeAll(comboBox_cuentaBancariaGiro.getItems());
+                setVisibleGiroItems(false);
+                generateDialog("Error", "Usuario no encontrado con el rut indicado");
+            }
+        }
+    }
+
+    /**
+     * Realiza una busqueda para realizar un deposito o retiro de dinero
+     * @param event evento generado al precionar el enter de buscar
+     */
+    public void searchUserGiroEnter(KeyEvent event){
+        if (event.getCode().getName().equals("Enter")) {
+            searchUserGiro();
         }
     }
 

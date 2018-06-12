@@ -200,6 +200,54 @@ public class CuentaAdministrador extends Cuenta {
         return resulado;
     }
 
+    /**
+     * Deposita en la Cuenta asociada al identificador la cantidad monto
+     * @param cuentaUsuario Cuenta Usuario
+     * @param identificador Identificador de la Cuenta
+     * @param monto Monto a depositar
+     * @return True/False
+     */
+
+    public boolean depositarCuentaBancaria(CuentaUsuario cuentaUsuario,long identificador, int monto){
+        if(cuentaUsuario.isCuentaInCuentasBancarias(identificador) == null){
+            lastError = "La cuenta bancaria no esta asociada al Usuario";
+            return false;
+        }
+        else{
+            final boolean resultado = cuentaUsuario.isCuentaInCuentasBancarias(identificador).depositar(monto);
+            lastError = cuentaUsuario.isCuentaInCuentasBancarias(identificador).getLastError();
+            return resultado;
+        }
+    }
+
+    /**
+     * Retira de la cuentaBancaria identificador asociada a la cuenta Usuario, la cantidad pasada por
+     * monto
+     * @param cuentaUsuario Cuenta Usuario
+     * @param identificador Identificador Cuenta Bancaria
+     * @param monto Monto a retirar
+     * @return
+     */
+
+    public boolean retirarCuentaBancaria(CuentaUsuario cuentaUsuario, long identificador, int monto){
+        if(cuentaUsuario.isCuentaInCuentasBancarias(identificador) == null){
+            lastError = "La cuenta bancaria no esta asociada la Usuario";
+            return false;
+        }
+        else{
+            final boolean resultado = cuentaUsuario.isCuentaInCuentasBancarias(identificador).transferir(monto);
+            lastError = cuentaUsuario.isCuentaInCuentasBancarias(identificador).getLastError();
+            return resultado;
+        }
+
+    }
+
+    public short obtenerPermisos(){
+        return 3;
+    }
+
+
+
     /*
      *  Setters y Getters
      */

@@ -178,6 +178,10 @@ public class CuentaEjecutivo extends Cuenta{
         }
 
     }
+
+    public short obtenerPermisos(){
+        return 2;
+    }
     /*
         Setters y Getters
      */

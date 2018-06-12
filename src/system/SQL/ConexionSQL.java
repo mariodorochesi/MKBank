@@ -50,7 +50,6 @@ public class ConexionSQL {
         try{
             ResultSet myRs = myStmt.executeQuery("SELECT * from personas");
             while(myRs.next()){
-
                 String nombre = myRs.getString("nombres");
                 String apellido = myRs.getString("apellidos");
                 String rut = myRs.getString("rut");

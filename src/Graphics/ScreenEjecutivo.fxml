@@ -20,7 +20,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Graphics.ControllerEjecutivo">
+<StackPane fx:id="stackPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Graphics.ControllerEjecutivo">
    <children>
       <GridPane prefHeight="540.0" prefWidth="960.0">
          <columnConstraints>
@@ -60,7 +60,7 @@
                   </JFXButton>
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="ap_NewUser" visible="false" GridPane.columnIndex="1">
+            <AnchorPane fx:id="ap_NewUser" GridPane.columnIndex="1">
                <children>
                   <JFXTextField fx:id="tf_nombres" focusColor="#a67a51" labelFloat="true" layoutX="10.0" layoutY="20.0" prefHeight="27.0" prefWidth="500.0" promptText="Nombres" unFocusColor="#838383" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
                      <cursor>
@@ -204,7 +204,7 @@
             </AnchorPane>
             <AnchorPane fx:id="ap_Girar" prefHeight="200.0" prefWidth="200.0" visible="false" GridPane.columnIndex="1">
                <children>
-                  <JFXTextField fx:id="tf_searchRutGiro" labelFloat="true" prefHeight="27.0" prefWidth="459.0" promptText="Nombre, rut, correo electronico, ..." style="-fx-background-color: #a8c9ce;" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="10.0" />
+                  <JFXTextField fx:id="tf_searchRutGiro" labelFloat="true" onKeyPressed="#searchUserGiroEnter" prefHeight="27.0" prefWidth="459.0" promptText="Nombre, rut, correo electronico, ..." style="-fx-background-color: #a8c9ce;" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="10.0" />
                   <JFXButton buttonType="RAISED" onAction="#searchUserGiro" style="-fx-background-color: #96d8ff;" text="Buscar" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
                   <JFXComboBox fx:id="comboBox_cuentaBancariaGiro" layoutX="36.0" layoutY="92.0" promptText="Cuenta Bancaria" visible="false" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="92.0" />
                   <JFXTextField fx:id="tf_montoGirar" layoutX="305.0" layoutY="142.0" promptText="Monto" visible="false" />
@@ -212,7 +212,7 @@
                   <JFXButton fx:id="b_depositar" layoutX="401.0" layoutY="201.0" onAction="#hacerDeposito" prefWidth="100.0" style="-fx-background-color: #FFC542;" text="Depositar" visible="false" AnchorPane.leftAnchor="401.0" AnchorPane.rightAnchor="249.0" />
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="ap_Report" GridPane.columnIndex="1">
+            <AnchorPane fx:id="ap_Report" visible="false" GridPane.columnIndex="1">
                <children>
                   <ScatterChart fx:id="scatterChart" layoutX="14.0" layoutY="21.0" prefHeight="241.0" prefWidth="500.0" title="Dinero vs Personas" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
                     <xAxis>

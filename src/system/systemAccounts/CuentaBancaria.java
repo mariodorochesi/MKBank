@@ -2,7 +2,7 @@ package system.systemAccounts;
 
 import system.general.Persona;
 
-public class CuentaBancaria extends Cuenta {
+public class CuentaBancaria extends CuentaUsuario{
 
     private long monto;
     private String tipoCuenta;
