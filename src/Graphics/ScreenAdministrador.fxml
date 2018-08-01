@@ -64,9 +64,14 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                   </JFXButton>
+                  <JFXButton fx:id="bmaster_goBusquedaCriterio" layoutX="-1.0" layoutY="245.0" minHeight="50.0" minWidth="200.0" onAction="#goBusquedaCriterio" ripplerFill="#1f83da" text="Busqueda por criterio" textAlignment="CENTER" textFill="#8c9dab">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </JFXButton>
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="ap_NewUser" GridPane.columnIndex="1">
+            <AnchorPane fx:id="ap_NewUser" visible="false" GridPane.columnIndex="1">
                <children>
                   <JFXTextField fx:id="tf_nombres" focusColor="#a67a51" labelFloat="true" layoutX="10.0" layoutY="20.0" prefHeight="27.0" prefWidth="500.0" promptText="Nombres" unFocusColor="#838383" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
                      <cursor>
@@ -266,6 +271,29 @@
                   <JFXTextField fx:id="tf_direccionNuevaSucursal" layoutX="177.0" layoutY="14.0" promptText="Direccion" AnchorPane.leftAnchor="180.0" AnchorPane.rightAnchor="170.0" />
                   <JFXButton buttonType="RAISED" layoutX="616.0" layoutY="14.0" onAction="#agregarSucursal" prefHeight="30.0" prefWidth="130.0" ripplerFill="#015e94" style="-fx-background-color: #009af5;" text="Crear Sucursal" textFill="#dbf9ff" AnchorPane.rightAnchor="10.0" />
                   <JFXButton buttonType="RAISED" layoutX="608.0" layoutY="502.0" onAction="#eliminarSucursal" prefHeight="30.0" prefWidth="221.0" ripplerFill="#d02626" style="-fx-background-color: #d06363;" text="Eliminar Sucursal seleccionada" textFill="#dbf9ff" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane fx:id="ap_BusquedaCriterio" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+               <children>
+                  <JFXTreeTableView fx:id="treeTableViewBusquedaCriterio" layoutY="183.0" onMouseClicked="#dobleClickEnTreeTable" prefHeight="352.0" prefWidth="750.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="183.0">
+                     <columns>
+                        <TreeTableColumn prefWidth="75.0" text="Rut" />
+                        <TreeTableColumn prefWidth="75.0" text="Nombre" />
+                        <TreeTableColumn prefWidth="75.0" text="Dinero Total" />
+                        <TreeTableColumn prefWidth="75.0" text="Numero de cuentas" />
+                     </columns>
+                     <columnResizePolicy>
+                        <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                  </JFXTreeTableView>
+                  <JFXToggleButton fx:id="tb_criterioGenero" layoutX="17.0" layoutY="6.0" onAction="#habilitarRecursosDeCriterio" prefHeight="27.0" prefWidth="167.0" text="Criterio de genero" />
+                  <JFXToggleButton fx:id="tb_criterioCiudad" layoutX="14.0" layoutY="64.0" onAction="#habilitarRecursosDeCriterio" prefHeight="27.0" prefWidth="167.0" text="Criterio de ciudad" />
+                  <JFXToggleButton fx:id="tb_criterioDineroTope" layoutX="13.0" layoutY="122.0" onAction="#habilitarRecursosDeCriterio" prefHeight="58.0" prefWidth="210.0" text="Criterio de dinero minimo" />
+                  <JFXCheckBox fx:id="cb_hombreCriterio" disable="true" layoutX="239.0" layoutY="26.0" text="Hombre" />
+                  <JFXCheckBox fx:id="cb_mujerCriterio" disable="true" layoutX="334.0" layoutY="26.0" text="Mujer" />
+                  <JFXTextField fx:id="tf_ciudadCriterio" disable="true" layoutX="241.0" layoutY="81.0" prefHeight="25.0" prefWidth="153.0" promptText="Ciudad" />
+                  <JFXTextField fx:id="tf_dineroTopeCriterio" disable="true" layoutX="241.0" layoutY="139.0" prefHeight="25.0" prefWidth="153.0" promptText="Dinero minimo" />
+                  <JFXButton buttonType="RAISED" layoutX="616.0" layoutY="81.0" onAction="#filtrarPorCirterio" prefHeight="86.0" prefWidth="130.0" ripplerFill="#c6e7f4" style="-fx-background-color: #86a5FF;" text="Aplicar filtro" AnchorPane.rightAnchor="14.0" />
                </children>
             </AnchorPane>
          </children>

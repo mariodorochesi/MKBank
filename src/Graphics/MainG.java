@@ -10,10 +10,12 @@ import system.general.Banco;
 import system.general.Loader;
 import system.general.Saver;
 
+import java.sql.SQLException;
+
 
 public class MainG extends Application {
 
-    private Banco banco;
+    private Banco banco = Banco.getInstance();
 
     //Clase que carga los datos desde la base SQL
     private Loader loader;
@@ -23,15 +25,14 @@ public class MainG extends Application {
 
     @Override
     public void init(){
-        banco = new Banco();
         try {
             conexionSQL = new ConexionSQL();
         }
-        catch (Exception e){
+        catch (SQLException e){
             System.out.println("No se pudo conectar a la base de datos");
             System.exit(-1);
         }
-        loader =  new Loader(banco, conexionSQL);
+        loader =  new Loader(conexionSQL);
         Saver saver = new Saver(conexionSQL);
         banco.setSaver(saver);
     }
@@ -50,15 +51,10 @@ public class MainG extends Application {
         // Este es el banco que se va a usar a lo largo de la ejecucion de programa
         //banco.loadFiles();
         loader.loadFromSQL();
-        ControllerEjecutivo.setBanco(banco);
-        ControllerAdministrador.setBanco(banco);
-        ControllerUser.setBanco(banco);
-        ControllerLogin.setBanco(banco);
 
         ScreenController screenController = new ScreenController(scene);
         AbstractController.setScreenController(screenController);
 
-        //FIXME: arreglar el encap. de esto
         screenController.addScreen("Login", fxmlLoader.load(getClass().getResource("Login.fxml").openStream()), fxmlLoader.getController());
         fxmlLoader = new FXMLLoader();
         screenController.addScreen("ScreenEjecutivo", fxmlLoader.load(getClass().getResource("ScreenEjecutivo.fxml").openStream()), fxmlLoader.getController());

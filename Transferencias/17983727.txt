@@ -1,7 +1,6 @@
-MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,1,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,3,.,brauliobaxon@gmail.com,.,131947916,.,7676,.,2018,.,5,.,24,.,gfgf
-MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,1,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,3,.,brauliobaxon@gmail.com,.,43732817,.,50000,.,2018,.,5,.,24,.,Hola amigo
-MARIO JAVIER DOROCHESI OLLNO,.,17983727-7,.,Cuenta Vista,.,1,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,3,.,brauliobaxon@gmail.com,.,515080556,.,1000,.,2018,.,5,.,22,.,Hola amigo
-MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,1,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,3,.,brauliobaxon@gmail.com,.,55688837,.,100,.,2018,.,5,.,24,.,amigoooo
-MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,1,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,3,.,brauliobaxon@gmail.com,.,581717114,.,100,.,2018,.,5,.,24,.,kkjkj
-MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,1,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,3,.,brauliobaxon@gmail.com,.,939087449,.,1000,.,2018,.,5,.,24,.,Amigooooo
-MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,1,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,3,.,brauliobaxon@gmail.com,.,979037587,.,1000000,.,2018,.,5,.,24,.,un palito pal amigo
+BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Vista,.,52769971,.,MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,350050498,.,mario.dorochesio@gmail.com,.,11055846,.,10000,.,2018,.,6,.,12,.,Gracias por Trabajar
+MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,350050498,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,392919088,.,brauliobaxon@gmail.com,.,355781495,.,100000,.,2018,.,6,.,6,.,Transferencia Prueba
+MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,350050498,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Vista,.,52769971,.,brauliobaxon@gmail.com,.,433174363,.,120000,.,2018,.,7,.,23,.,hola
+BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta de Ahorro,.,392919088,.,MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,350050498,.,mario.dorochesio@gmail.com,.,487914458,.,10000,.,2018,.,6,.,2,.,Holis
+MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,350050498,.,BRAULIO ANDRES LOBO MADARIAGA,.,19267473-5,.,Cuenta Corriente,.,392919088,.,brauliobaxon@gmail.com,.,567258758,.,150000,.,2018,.,6,.,12,.,Feliz Navidad Adelantada
+MARIO JAVIER DOROCHESI OLLINO,.,17983727-7,.,Cuenta Vista,.,350050498,.,KATRINA ELEPHTERIA STAMULIS VERGARA,.,18918552-9,.,Cuenta Vista,.,577510648,.,katitakatun@gmail.com,.,890142255,.,10000,.,2018,.,6,.,11,.,Hola Linda

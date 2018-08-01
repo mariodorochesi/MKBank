@@ -92,6 +92,66 @@ public class Persona{
         this.cuentaUsuario = null;
     }
 
+    public void otorgarPermisosUsuario(){
+        if(cuentaUsuario != null){
+            System.out.println("Ya posee permisos de ususario.");
+        }
+        else{
+            cuentaUsuario = new CuentaUsuario(this);
+        }
+    }
+
+    public void otorgarPermisosEjecutivo(){
+        if(cuentaEjecutivo != null){
+            System.out.println("La persona ya posee permisos de ejecutivo.");
+        }
+        else{
+            cuentaEjecutivo = new CuentaEjecutivo(this);
+        }
+    }
+
+    public void otorgarPermisosAdministrador(){
+        if(cuentaAdministrador != null){
+            System.out.println("La persona ya posee permisos de administrador.");
+        }
+        else{
+            cuentaAdministrador = new CuentaAdministrador(this);
+        }
+    }
+
+    public void otorgarPermisosSuperAdministrador(){
+        if(cuentaSuperAdministrador != null){
+            System.out.println("La persona ya posee permisos de Superadministrador.");
+        }
+        else{
+            cuentaSuperAdministrador = new CuentaSuperAdministrador(this);
+        }
+    }
+
+    public void revocarPermisosSuperiores(){
+        cuentaEjecutivo = null;
+        cuentaAdministrador = null;
+        cuentaSuperAdministrador = null;
+    }
+
+    public boolean isAdministrador(){
+        return cuentaAdministrador != null;
+    }
+
+    public boolean isSuperAdministrador(){
+        return cuentaSuperAdministrador != null;
+    }
+
+    public boolean isEjecutivo(){
+        return cuentaEjecutivo != null;
+    }
+
+    public boolean isUsuario(){
+        return cuentaUsuario != null;
+    }
+
+
+
 
     /*
     *   Seccion con Setters y Getters

@@ -3,6 +3,8 @@ package system.general;
 import system.SQL.ConexionSQL;
 import system.systemAccounts.CuentaBancaria;
 
+import java.sql.SQLException;
+
 public class Saver {
 
     //Conexion SQL hacia donde se desean agregar los Datos
@@ -23,7 +25,7 @@ public class Saver {
      * @param cuentaBancaria Cuenta a agregar
      */
 
-    public void agregarCuentaBancariaSQL(CuentaBancaria cuentaBancaria){
+    public void agregarCuentaBancariaSQL(CuentaBancaria cuentaBancaria) throws SQLException {
         conexionSQL.agregarCuentaBancariaSQL(cuentaBancaria);
     }
 
@@ -33,7 +35,7 @@ public class Saver {
      * @param permisos Permisos superior que posee la perosna
      */
 
-    public void agregarPersonaSQL(Persona persona , int permisos){
+    public void agregarPersonaSQL(Persona persona , int permisos) throws SQLException {
         conexionSQL.agregarPersonaSQL(persona,permisos);
     }
 
@@ -43,7 +45,7 @@ public class Saver {
      * @param permisos Nuevos permisos a asignar
      */
 
-    public void modificarPermisosSQLSuperior(Persona persona, int permisos){
+    public void modificarPermisosSQLSuperior(Persona persona, int permisos) throws SQLException {
         conexionSQL.modificarCuentaSQLSuperior(persona, permisos);
     }
 
@@ -53,7 +55,7 @@ public class Saver {
      * @param permisos Permisos a asignar
      */
 
-    public void modificarPermisoUsuarioSQL(Persona persona, int permisos){
+    public void modificarPermisoUsuarioSQL(Persona persona, int permisos) throws SQLException {
         conexionSQL.modificarCuentaSQLUsuario(persona, permisos);
     }
 
@@ -62,7 +64,7 @@ public class Saver {
      * @param t Transferencia a agregar
      */
 
-    public void agregarTransferenciaSQL(Transferencias t){
+    public void agregarTransferenciaSQL(Transferencias t) throws SQLException {
         conexionSQL.agregarTransferenciaSQL(t);
     }
 
@@ -72,7 +74,7 @@ public class Saver {
      * @param monto Monto a depositar
      */
 
-    public void depositarCuentaSQL(CuentaBancaria cuentaBancaria, int monto){
+    public void depositarCuentaSQL(CuentaBancaria cuentaBancaria, int monto) throws SQLException {
         conexionSQL.depositarCuentaSQL(cuentaBancaria,monto);
     }
 
@@ -82,7 +84,7 @@ public class Saver {
      * @param monto Monto a transferir
      */
 
-    public void transferirCuentaSQL(CuentaBancaria cuentaBancaria, int monto){
+    public void transferirCuentaSQL(CuentaBancaria cuentaBancaria, int monto) throws SQLException {
         conexionSQL.transferirCuentaSQL(cuentaBancaria,monto);
     }
 
@@ -91,7 +93,7 @@ public class Saver {
      * @param persona Persona  editar
      */
 
-    public void editarPersonaSQL(Persona persona){
+    public void editarPersonaSQL(Persona persona) throws SQLException {
         conexionSQL.editarPersonaSQL(persona);
     }
 
@@ -100,14 +102,14 @@ public class Saver {
      * @param rut Rut de la Persona a eliminar
      */
 
-    public void eliminarPersona(String rut){conexionSQL.eliminarPersona(rut);}
+    public void eliminarPersona(String rut) throws SQLException {conexionSQL.eliminarPersona(rut);}
 
     /**
      * Metodo para eliminar una Cuenta Bancaira de la Base de Datos
      * @param identificador Identificador de la Cuenta e liminar
      */
 
-    public void eliminarCuentaBancariaSQL(long identificador){
+    public void eliminarCuentaBancariaSQL(long identificador) throws SQLException {
         conexionSQL.eliminarCuentaBancariaSQL(identificador);
     }
 
@@ -116,7 +118,7 @@ public class Saver {
      * @param sucursal Sucursal a Agregar
      */
     
-    public void agregarSucursalSQL(Sucursal sucursal){
+    public void agregarSucursalSQL(Sucursal sucursal) throws SQLException {
         conexionSQL.agregarSucursalSQL(sucursal);
     }
 
@@ -125,7 +127,7 @@ public class Saver {
      * @param nombre Nombre de la Sucursal a Eliminar
      */
 
-    public void eliminarSucursalSQL(String nombre){
+    public void eliminarSucursalSQL(String nombre) throws SQLException {
         conexionSQL.eliminarSucursalSQL(nombre);
     }
 }

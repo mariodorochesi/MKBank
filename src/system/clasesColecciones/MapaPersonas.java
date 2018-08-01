@@ -10,8 +10,11 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
+import system.excepciones.PersonaInexistente;
+import system.excepciones.RutInvalido;
 import system.general.Persona;
 import system.general.PersonaTreeTableView;
+import system.general.Utils;
 import system.systemAccounts.CuentaBancaria;
 import system.systemAccounts.CuentaBancariaRecursiveTree;
 import system.systemAccounts.CuentaUsuario;
@@ -52,7 +55,6 @@ public class MapaPersonas {
      * @param estadoCivil Estado civil de la Persona a Agregar
      * @param genero Genero de la Persona a Agregar
      */
-
     public void agregarPersona(String nombre , String apellidos, String rut, String ciudad ,
                                String direccion , String correoElectronico,
                                String telefono, String nacionalidad, int annoNacimiento,
@@ -67,7 +69,6 @@ public class MapaPersonas {
      * Sobrecarga del metood anterior, que agrega una persona la mapa de personas
      * @param p Persona a agregar
      */
-
     public void agregarPersona(Persona p){
         mapaPersonas.put(p.getRut(),p);
     }
@@ -76,7 +77,6 @@ public class MapaPersonas {
      * Elimina a la Persona del Mapa de Personas, en caso de existir
      * @param rut Rut de la Persona a Eliminar
      */
-
     public void eliminarPersona(String rut){
         mapaPersonas.remove(rut);
     }
@@ -87,7 +87,6 @@ public class MapaPersonas {
      * @param rut Rut de la Persona a buscar
      * @return Retorna true si existe la persona, false en caso contrario
      */
-
     public boolean existePersona(String rut){
         return mapaPersonas.get(rut) != null;
     }
@@ -98,8 +97,10 @@ public class MapaPersonas {
      * @param rut Rut de la persona
      * @return Retorna el objeto Persona si fue encontrado
      */
-
-    public Persona obtenerPersona(String rut){
+    public Persona obtenerPersona(String rut) throws PersonaInexistente, RutInvalido {
+        Utils.validarRut(rut);
+        if(mapaPersonas.get(rut) == null)
+            throw new PersonaInexistente(rut + "No existe en la base de datos");
         return mapaPersonas.get(rut);
     }
 
@@ -110,7 +111,6 @@ public class MapaPersonas {
      * Es necesario, para realizar ciertas funciones del banco
      * @return Arreglo con personas
      */
-
     public Collection<Persona> values(){
         return mapaPersonas.values();
    }
@@ -121,7 +121,6 @@ public class MapaPersonas {
      * @param rut Rut de la persona a quie se desea eliminar la cuenta
      * No retorna nada
      */
-
     public void eliminarCuentaAdministrador(String rut){
         if(existePersona(rut)){
             mapaPersonas.get(rut).setCuentaAdministrador(null);
@@ -135,7 +134,6 @@ public class MapaPersonas {
      * @param rut Rut de la persona a quie se desea eliminar la cuenta
      * No retorna nada
      */
-
     public void eliminarCuentaEjecutivo(String rut){
         if(existePersona(rut)){
             mapaPersonas.get(rut).setCuentaEjecutivo(null);
@@ -149,7 +147,6 @@ public class MapaPersonas {
      * @param rut Rut de la persona a quie se desea eliminar la cuenta
      * No retorna nada
      */
-
     public void eliminarCuentaUsuario(String rut){
         if(existePersona(rut)){
             mapaPersonas.get(rut).setCuentaUsuario(null);
@@ -160,7 +157,6 @@ public class MapaPersonas {
      * Obtiene la cantidad de hombres almacenados en este mapa de personas
      * @return  - Retorna la cantidad de hombres
      */
-
     public int obtenerNumeroHombres(){
         int cantidad = 0;
         for(Persona p : mapaPersonas.values()){
@@ -174,7 +170,6 @@ public class MapaPersonas {
      * Obtiene la cantidad de hombres almacenados en este mapa de personas
      * @return  - Retorna la cantidad de hombres
      */
-
     public int obtenerNumeroMujeres(){
         int cantidad = 0;
         for(Persona p : mapaPersonas.values()){
@@ -188,7 +183,6 @@ public class MapaPersonas {
      * Obtiene la cantidad de personas que tienen permisos de ejecutivos
      * @return  - Retorna la cantidad de ejecutivos
      */
-
     public int obtenerNumeroEjecutivos(){
         int cantidad = 0;
         for(Persona p : mapaPersonas.values()){
@@ -202,7 +196,6 @@ public class MapaPersonas {
      * Obtiene la cantidad de personas totales en el mapa de personas
      * @return  - Retorna la cantidad de personas totales en el mapa de personas
      */
-
     public int obtenerNumeroPersonas(){
         return mapaPersonas.values().size();
     }
@@ -210,7 +203,6 @@ public class MapaPersonas {
      /**
      * @return  - Retorna la cantidad de dinero total de las personas del mapa
      */
-
     public int obtenerDineroTotal(){
         int cantidad = 0;
         CuentaUsuario cu;
@@ -224,12 +216,36 @@ public class MapaPersonas {
     }
 
     /**
+     * Retorna la cantidad total de clientes en una ciudad en especifico
+     * @param ciudad
+     * @return
+     */
+    public int totalClientesEnCiudad(String ciudad){
+        int total = 0;
+
+        for(Persona p: mapaPersonas.values()){
+            if(p.getCiudad().equals(ciudad)){
+                total++;
+            }
+        }
+        return total;
+    }
+
+    public int totalClientes(){
+        int total = 0;
+        for(Persona p: mapaPersonas.values()){
+            total++;
+        }
+
+        return total;
+    }
+
+    /**
      * Actualiza el contenido de la tabla ingresada como parametros con el contenido del
      * mapa actual.
      * @param tabla         - Tabla que se quiere actualizar
      * @param reportLines   - ArrayList en el que se alacenaran datos en fomato csv
      */
-
     public void actualizarTabla(JFXTreeTableView tabla, ArrayList<String> reportLines){
         ObservableList data = FXCollections.observableArrayList();
         for(Persona p : mapaPersonas.values()){
@@ -280,7 +296,6 @@ public class MapaPersonas {
      * actual. Este grafico tiene que ser Personas (x) vs Dinero total de sus cuentas (y).
      * @param grafico   - Grafico que se quiere actualizar.
      */
-
     public void actualizarGrafico(ScatterChart grafico){
         // Limpiando data del grafico
         grafico.getData().removeAll(grafico.getData());

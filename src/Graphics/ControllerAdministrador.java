@@ -2,6 +2,7 @@ package Graphics;
 
 import com.jfoenix.controls.*;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
+import criteriosBusqueda.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,15 +15,20 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
+import system.excepciones.PersonaInexistente;
+import system.excepciones.RutInvalido;
 import system.general.*;
+import system.interfaces.Criteria;
 import system.systemAccounts.*;
 
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,6 +139,8 @@ public class ControllerAdministrador extends AbstractController implements Initi
     private JFXButton bmaster_goGirar;
     @FXML
     private JFXButton bmaster_goAdmSucursales;
+    @FXML
+    private JFXButton bmaster_goBusquedaCriterio;
 
     @FXML
     private AnchorPane ap_NewUser;
@@ -144,6 +152,8 @@ public class ControllerAdministrador extends AbstractController implements Initi
     private AnchorPane ap_Girar;
     @FXML
     private AnchorPane ap_AdmSucursales;
+    @FXML
+    private AnchorPane ap_BusquedaCriterio;
 
     @FXML
     private JFXTreeTableView treeTableView;
@@ -190,11 +200,26 @@ public class ControllerAdministrador extends AbstractController implements Initi
     @FXML
     private Label lb_5;
 
+    // Recursos Busqueda por criterio
+    @FXML private JFXTreeTableView treeTableViewBusquedaCriterio;
+    @FXML private JFXToggleButton tb_criterioGenero;
+    @FXML private JFXToggleButton tb_criterioCiudad;
+    @FXML private JFXToggleButton tb_criterioDineroTope;
+    @FXML private JFXCheckBox cb_hombreCriterio;
+    @FXML private JFXCheckBox cb_mujerCriterio;
+    @FXML private JFXTextField tf_ciudadCriterio;
+    @FXML private JFXTextField tf_dineroTopeCriterio;
+
+
+    // Otras variables
     private String rutBuscadoGiro;
     private String rutBuscado;
     private ArrayList<String> reportLines;
     private static CuentaAdministrador cuentaAdministrador;
-    private static Banco banco;
+    private Banco banco = Banco.getInstance();
+    private final String MARKED_STYLE = "-fx-background-color: #345a72;";
+    private final String UNMARKED_STYLE = "-fx-background-color: #334961;";
+
 
     /**
      * Inicializa lo necesario en la ventana para que funcione el ingresado
@@ -244,21 +269,48 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
         // Agregamos la persona al sistema
         System.out.println("Agregando a la persona " + nombres);
-        banco.agregarPersona(cuentaAdministrador, nombres, apellidos, rut, ciudad, direccion, correo,
-                celular, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursalAsociada);
+        try {
+            banco.agregarPersona(cuentaAdministrador, nombres, apellidos, rut, ciudad, direccion, correo,
+                    celular, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursalAsociada);
+        }catch(SQLException e){
+            generateDialog("Error", "Problema al conectarse con la base de dato.");
+        } catch (PersonaInexistente personaInexistente) {
+            generateDialog("Error", "El rut " + rut + " no se eneucntra en el sistema.");
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
 
         // Dando permisos de usuarios a la persona y agregando su primera cuenta bancaria
         if(cb_permisoUsuario.isSelected()){
             System.out.println("Agregando Permisos Usuario a" + nombres);
-            banco.otorgarPermisosUsuario(rut);
-            banco.agregarCuentaBancaria(cuentaAdministrador, banco.isUsuarioOnBanco(rut),
-                    (String) comboBox_cuentaBancariaInicial.getValue());
+            try {
+                banco.otorgarPermisosUsuario(rut);
+                banco.agregarCuentaBancaria(cuentaAdministrador, banco.isUsuarioOnBanco(rut),
+                        (String) comboBox_cuentaBancariaInicial.getValue());
+            }catch (SQLException e){
+                generateDialog("Error", "Problema al conectarse con la base de dato.");
+            } catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + rut + " no se eneucntra en el sistema.");
+            }catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+                return;
+            }
         }
 
         // Dando permisos de ejecutivo a la persona
         if(cb_permisoEjecutivo.isSelected()){
             System.out.println("Agregando Permisos Ejecutivo a " + nombres);
-            banco.otorgarPermisosSuperiores(Banco.PERMISO_EJECUTIVO, rut);
+            try {
+                banco.otorgarPermisosSuperiores(Banco.PERMISO_EJECUTIVO, rut);
+            }catch (SQLException e){
+                generateDialog("Error", "Problema al conectarse con la base de dato.");
+            } catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + rut + " no se eneucntra en el sistema.");
+            }catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+                return;
+            }
         }
 
 
@@ -356,13 +408,15 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_Report.setVisible(false);
         ap_Girar.setVisible(false);
         ap_AdmSucursales.setVisible(false);
+        ap_BusquedaCriterio.setVisible(false);
 
         // Cambiando colores de los botones laterales
-        bmaster_goEditUser.setStyle("-fx-background-color: #345a72;");
-        bmaster_goNewUser.setStyle("-fx-background-color: #334961;");
-        bmaster_goReport.setStyle("-fx-background-color: #334961;");
-        bmaster_goGirar.setStyle("-fx-background-color: #334961;");
-        bmaster_goAdmSucursales.setStyle("-fx-background-color: #334961;");
+        bmaster_goEditUser.setStyle(MARKED_STYLE);
+        bmaster_goNewUser.setStyle(UNMARKED_STYLE);
+        bmaster_goReport.setStyle(UNMARKED_STYLE);
+        bmaster_goGirar.setStyle(UNMARKED_STYLE);
+        bmaster_goAdmSucursales.setStyle(UNMARKED_STYLE);
+        bmaster_goBusquedaCriterio.setStyle(UNMARKED_STYLE);
     }
 
     /**
@@ -375,13 +429,15 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_Report.setVisible(false);
         ap_Girar.setVisible(false);
         ap_AdmSucursales.setVisible(false);
+        ap_BusquedaCriterio.setVisible(false);
 
         // Cambiando colores de los botones laterales
-        bmaster_goNewUser.setStyle("-fx-background-color: #345a72;");
-        bmaster_goEditUser.setStyle("-fx-background-color: #334961;");
-        bmaster_goReport.setStyle("-fx-background-color: #334961;");
-        bmaster_goGirar.setStyle("-fx-background-color: #334961;");
-        bmaster_goAdmSucursales.setStyle("-fx-background-color: #334961;");
+        bmaster_goNewUser.setStyle(MARKED_STYLE);
+        bmaster_goEditUser.setStyle(UNMARKED_STYLE);
+        bmaster_goReport.setStyle(UNMARKED_STYLE);
+        bmaster_goGirar.setStyle(UNMARKED_STYLE);
+        bmaster_goAdmSucursales.setStyle(UNMARKED_STYLE);
+        bmaster_goBusquedaCriterio.setStyle(UNMARKED_STYLE);
     }
 
     /**
@@ -395,13 +451,15 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_NewUser.setVisible(false);
         ap_Girar.setVisible(false);
         ap_AdmSucursales.setVisible(false);
+        ap_BusquedaCriterio.setVisible(false);
 
         // Cambiando colores de los botones laterales
-        bmaster_goReport.setStyle("-fx-background-color: #345a72;");
-        bmaster_goEditUser.setStyle("-fx-background-color: #334961;");
-        bmaster_goNewUser.setStyle("-fx-background-color: #334961;");
-        bmaster_goGirar.setStyle("-fx-background-color: #334961;");
-        bmaster_goAdmSucursales.setStyle("-fx-background-color: #334961;");
+        bmaster_goReport.setStyle(MARKED_STYLE);
+        bmaster_goEditUser.setStyle(UNMARKED_STYLE);
+        bmaster_goNewUser.setStyle(UNMARKED_STYLE);
+        bmaster_goGirar.setStyle(UNMARKED_STYLE);
+        bmaster_goAdmSucursales.setStyle(UNMARKED_STYLE);
+        bmaster_goBusquedaCriterio.setStyle(UNMARKED_STYLE);
     }
 
     /**
@@ -414,13 +472,15 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_NewUser.setVisible(false);
         ap_Girar.setVisible(true);
         ap_AdmSucursales.setVisible(false);
+        ap_BusquedaCriterio.setVisible(false);
 
         // Cambiando colores de los botones laterales
-        bmaster_goGirar.setStyle("-fx-background-color: #345a72;");
-        bmaster_goEditUser.setStyle("-fx-background-color: #334961;");
-        bmaster_goNewUser.setStyle("-fx-background-color: #334961;");
-        bmaster_goReport.setStyle("-fx-background-color: #334961;");
-        bmaster_goAdmSucursales.setStyle("-fx-background-color: #334961;");
+        bmaster_goGirar.setStyle(MARKED_STYLE);
+        bmaster_goEditUser.setStyle(UNMARKED_STYLE);
+        bmaster_goNewUser.setStyle(UNMARKED_STYLE);
+        bmaster_goReport.setStyle(UNMARKED_STYLE);
+        bmaster_goAdmSucursales.setStyle(UNMARKED_STYLE);
+        bmaster_goBusquedaCriterio.setStyle(UNMARKED_STYLE);
     }
 
     /**
@@ -433,13 +493,36 @@ public class ControllerAdministrador extends AbstractController implements Initi
         ap_NewUser.setVisible(false);
         ap_Girar.setVisible(false);
         ap_AdmSucursales.setVisible(true);
+        ap_BusquedaCriterio.setVisible(false);
 
         // Cambiando colores de los botones laterales
-        bmaster_goGirar.setStyle("-fx-background-color: #334961;");
-        bmaster_goEditUser.setStyle("-fx-background-color: #334961;");
-        bmaster_goNewUser.setStyle("-fx-background-color: #334961;");
-        bmaster_goReport.setStyle("-fx-background-color: #334961;");
-        bmaster_goAdmSucursales.setStyle("-fx-background-color: #345a72;");
+        bmaster_goGirar.setStyle(UNMARKED_STYLE);
+        bmaster_goEditUser.setStyle(UNMARKED_STYLE);
+        bmaster_goNewUser.setStyle(UNMARKED_STYLE);
+        bmaster_goReport.setStyle(UNMARKED_STYLE);
+        bmaster_goAdmSucursales.setStyle(MARKED_STYLE);
+        bmaster_goBusquedaCriterio.setStyle(UNMARKED_STYLE);
+    }
+
+    /**
+     * Evento gatillado al presionar el boton de busqueda por cirterio en la barra
+     * lateral izquierda.
+     */
+    public void goBusquedaCriterio(){
+        ap_Report.setVisible(false);
+        ap_EditUser.setVisible(false);
+        ap_NewUser.setVisible(false);
+        ap_Girar.setVisible(false);
+        ap_AdmSucursales.setVisible(false);
+        ap_BusquedaCriterio.setVisible(true);
+
+        // Cambiando colores de los botones laterales
+        bmaster_goGirar.setStyle(UNMARKED_STYLE);
+        bmaster_goEditUser.setStyle(UNMARKED_STYLE);
+        bmaster_goNewUser.setStyle(UNMARKED_STYLE);
+        bmaster_goReport.setStyle(UNMARKED_STYLE);
+        bmaster_goAdmSucursales.setStyle(UNMARKED_STYLE);
+        bmaster_goBusquedaCriterio.setStyle(MARKED_STYLE);
     }
 
     /**
@@ -447,12 +530,17 @@ public class ControllerAdministrador extends AbstractController implements Initi
      * permitiendo limpiar la pantalla y mostrar la que corresponde.
      */
     public void actionSearch(ActionEvent event){
-        if(searchUser(tf_searchRut.getText())){
-            setVisibleUserInfo(true);
-        }
-        else{
-            setVisibleUserInfo(false);
-            generateDialog("Error", "Usuario no encontrado con el rut: " + tf_searchRut.getText());
+        try {
+            if (searchUser(tf_searchRut.getText())) {
+                setVisibleUserInfo(true);
+            } else {
+                setVisibleUserInfo(false);
+                generateDialog("Error", "Usuario no encontrado con el rut: " + tf_searchRut.getText());
+            }
+        }catch (PersonaInexistente personaInexistente){
+            generateDialog("Error", "El rut " + tf_searchRut.getText() + " no se eneucntra en el sistema.");
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
         }
     }
 
@@ -462,12 +550,17 @@ public class ControllerAdministrador extends AbstractController implements Initi
      */
     public void actionSearchKey(KeyEvent event){
         if (event.getCode().getName().equals("Enter")){
-            if(searchUser(tf_searchRut.getText())){
-                setVisibleUserInfo(true);
-            }
-            else{
-                setVisibleUserInfo(false);
-                generateDialog("Error", "Usuario no encontrado con el rut: " + tf_searchRut.getText());
+            try {
+                if (searchUser(tf_searchRut.getText())) {
+                    setVisibleUserInfo(true);
+                } else {
+                    setVisibleUserInfo(false);
+                    generateDialog("Error", "Usuario no encontrado con el rut: " + tf_searchRut.getText());
+                }
+            }catch (PersonaInexistente personaInexistente){
+                generateDialog("Error", "El rut " + tf_searchRut + " no se eneucntra en el sistema.");
+            }catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
             }
         }
     }
@@ -480,23 +573,32 @@ public class ControllerAdministrador extends AbstractController implements Initi
      * @param rut   Rut que se va a usar para buscar el usuario
      * @return      Retorna true si es que encuentra un usuario con ese rut, false en caso contrario
      */
-    private boolean searchUser(String rut){
+    private boolean searchUser(String rut) throws PersonaInexistente, RutInvalido {
         // Buscar en el sistema con el rut y retornar true si lo encuentra
         // Editar los valores de los text field con los datos encontrados
-        final Persona persona = banco.isPersonaOnBanco(rut);
+        final Persona persona;
+        try {
+            persona = banco.isPersonaOnBanco(rut);
+        }catch(PersonaInexistente personaInexistente){
+            generateDialog("Error", "El rut " + rut + " no se eneucntra en el sistema.");
+            return false;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return false;
+        }
         final boolean encontrado = persona != null;
         rutBuscado = rut;
 
         if(encontrado){
             if(banco.getPermisos(persona) > banco.getPermisos(cuentaAdministrador.getPersona())){
                 generateDialog("Error" , "No puede modificar a personas con permisos superiores a los suyos.");
-                return true;
+                return false;
             }
         }
 
         if(cuentaAdministrador.getPersona().getRut().equals(rut)){
             generateDialog("Error" , "No se puede modificar a su misma persona.");
-            return true;
+            return false;
         }
         else {
 
@@ -516,6 +618,9 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
                 final boolean hombre = persona.getGenero().equals("Hombre");
 
+                tb_permisosEjecutivo.setSelected(banco.contieneCuentaEjecutivo(rut));
+                tb_permisosUsuario.setSelected(banco.contieneCuentaUsuario(rut));
+
                 // Setenado valores
                 tf_nombres1.setText(nombres.toUpperCase());
                 tf_apellidos1.setText(apellidos.toUpperCase());
@@ -531,9 +636,6 @@ public class ControllerAdministrador extends AbstractController implements Initi
                 cb_mujer1.setSelected(!hombre);
                 tf_nacionalidad1.setText(nacionalidad.toUpperCase());
                 comboBox_sucursalAsociada1.setValue(sucursalAsociada);
-
-                tb_permisosEjecutivo.setSelected(banco.contieneCuentaEjecutivo(rut));
-                tb_permisosUsuario.setSelected(banco.contieneCuentaUsuario(rut));
 
                 if (banco.contieneCuentaUsuario(rut)) {
                     treeTableView.setDisable(false);
@@ -563,7 +665,16 @@ public class ControllerAdministrador extends AbstractController implements Initi
      * @param event evento ocacionado al precionar el boton modificar
      */
     public void modificarUsuario(ActionEvent event){
-        Persona persona = banco.isPersonaOnBanco(rutBuscado);
+        Persona persona;
+        try {
+            persona = banco.isPersonaOnBanco(rutBuscado);
+        }catch (PersonaInexistente personaInexistente){
+            generateDialog("Error", "El rut " + rutBuscado + " no se eneucntra en el sistema.");
+            return;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
         if(banco.getPermisos(cuentaAdministrador.getPersona()) >= banco.getPermisos(persona)) {
             final String nombres = tf_nombres1.getText();
             final String apellidos = tf_apellidos1.getText();
@@ -581,8 +692,12 @@ public class ControllerAdministrador extends AbstractController implements Initi
             final String genero; if(cb_hombre1.isSelected()) genero = "Hombre"; else genero = "Mujer";
             final String sucursal_asociada = (String) comboBox_sucursalAsociada1.getValue();
 
-            banco.editarPersona(persona, nombres, apellidos, rut, ciudad, direccion, correo, celular,
-                    nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursal_asociada);
+            try {
+                banco.editarPersona(persona, nombres, apellidos, rut, ciudad, direccion, correo, celular,
+                        nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursal_asociada);
+            }catch (SQLException e){
+                generateDialog("Error", "Problema al conectarse con la base de dato.");
+            }
         }
         else {
             generateDialog("Error", "permisos insuficientes para modificar datos de "
@@ -618,15 +733,6 @@ public class ControllerAdministrador extends AbstractController implements Initi
         comboBox_sucursalAsociada1.setVisible(visible);
         b_eliminarCuentaBancaria.setVisible(visible);
         b_eliminarPersona.setVisible(visible);
-    }
-
-    /**
-     * **
-     * Metodo usado para actualizar la instancia de banco almacenada en la ventana de ejecutivos
-     * @param banco Instancia de banco que se va a usar a lo largo de la ejecucion del programa
-     */
-    public static void setBanco(Banco banco){
-        ControllerAdministrador.banco = banco;
     }
 
     /**
@@ -715,8 +821,21 @@ public class ControllerAdministrador extends AbstractController implements Initi
             generateDialog("Error", "Primero seleccione el tipo de cuenta bancaria que quiere crear");
             return;
         }
-        CuentaUsuario usuario = banco.isUsuarioOnBanco(rutBuscado);
-        banco.agregarCuentaBancaria(cuentaAdministrador,usuario,(String)comboBox_nuevaCuentaBancaria.getValue());
+        CuentaUsuario usuario;
+        try {
+            usuario = banco.isUsuarioOnBanco(rutBuscado);
+        }catch (PersonaInexistente personaInexistente){
+            generateDialog("Error", "El rut " + rutBuscado + " no se eneucntra en el sistema.");
+            return;
+        } catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
+        try {
+            banco.agregarCuentaBancaria(cuentaAdministrador, usuario, (String) comboBox_nuevaCuentaBancaria.getValue());
+        }catch (SQLException e){
+            generateDialog("Error", "Problema al conectarse con la base de dato.");
+        }
         updateTreeViewUserAccounts(usuario);
         updateComboBoxCuentasBancarias(usuario);
         generateDialog("Mensaje",banco.getLastError());
@@ -732,8 +851,25 @@ public class ControllerAdministrador extends AbstractController implements Initi
             generateDialog("Error","Se tiene que seleccionar una cuenta bancaria para eliminar");
             return;
         }
-        CuentaUsuario usuario =  banco.isUsuarioOnBanco(rutBuscado);
-        banco.eliminarCuentaBancaria(cuentaAdministrador,usuario,(Long) comboBox_cuentaBancariaEliminar.getValue());
+        
+        CuentaUsuario usuario;
+        try {
+            usuario = banco.isUsuarioOnBanco(rutBuscado);
+        }catch(PersonaInexistente personaInexistente){
+            generateDialog("Error", "El rut " + rutBuscado + " no se eneucntra en el sistema.");
+            return;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
+
+        try {
+            banco.eliminarCuentaBancaria(cuentaAdministrador, usuario, (Long) comboBox_cuentaBancariaEliminar.getValue());
+        } catch (SQLException e){
+            generateDialog("Error", "Problema al conectarse con la base de dato.");
+            return;
+        }
+
         updateTreeViewUserAccounts(usuario);
         updateComboBoxCuentasBancarias(usuario);
         generateDialog("Mensaje",banco.getLastError());
@@ -742,9 +878,27 @@ public class ControllerAdministrador extends AbstractController implements Initi
     public void eliminarPersona(ActionEvent event){
 
         String rut = tf_searchRut.getText();
-        Persona p = banco.isPersonaOnBanco(rut);
+        Persona p;
+        try {
+            p = banco.isPersonaOnBanco(rut);
+        }catch(PersonaInexistente personaInexistente){
+            generateDialog("Error", "El rut " + rut + " no se eneucntra en el sistema.");
+            return;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
         if(p != null) {
-            banco.eliminarPersona(cuentaAdministrador, p.getRut());
+            try {
+                banco.eliminarPersona(cuentaAdministrador, p.getRut());
+            } catch (SQLException e){
+                generateDialog("Error", "Problema al conectarse con la base de dato.");
+            } catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + rut + " no se eneucntra en el sistema.");
+            }catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+                return;
+            }
             generateDialog("Operacion Exitosa", p.getNombres() + " " + p.getApellidos() + " ha sido eliminado");
         }
         else
@@ -790,7 +944,16 @@ public class ControllerAdministrador extends AbstractController implements Initi
      */
     public void searchUserGiro(){
         rutBuscadoGiro = tf_searchRutGiro.getText();
-        CuentaUsuario cuentaUsuario = banco.isUsuarioOnBanco(rutBuscadoGiro);
+        CuentaUsuario cuentaUsuario;
+        try {
+            cuentaUsuario = banco.isUsuarioOnBanco(rutBuscadoGiro);
+        }catch (PersonaInexistente personaInexistente){
+            generateDialog("Error", "El rut " + rutBuscadoGiro + " no se eneucntra en el sistema.");
+            return;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
 
         if(cuentaUsuario != null && cuentaUsuario.getPersona().getRut().equals(cuentaAdministrador.getPersona().getRut())){
             generateDialog("Error" , "No puede modificar sus propios montos. Intentelo con otra persona.");
@@ -845,8 +1008,12 @@ public class ControllerAdministrador extends AbstractController implements Initi
             generateDialog("Error", "Primero se tiene que seleccionar una cuenta bancaria");
             return;
         }
-        banco.depositarCuentaBancaria(cuentaAdministrador, (Long) comboBox_cuentaBancariaGiro.getValue(),
-                monto);
+        try {
+            banco.depositarCuentaBancaria(cuentaAdministrador, (Long) comboBox_cuentaBancariaGiro.getValue(),
+                    monto);
+        } catch(SQLException e){
+            generateDialog("Error", "Problema al conectarse con la base de dato.");
+        }
         generateDialog(" ", banco.getLastError());
     }
 
@@ -860,8 +1027,12 @@ public class ControllerAdministrador extends AbstractController implements Initi
             generateDialog("Error", "Primero se tiene que seleccionar una cuenta bancaria");
             return;
         }
-        banco.retirarCuentaBancaria(cuentaAdministrador, (Long) comboBox_cuentaBancariaGiro.getValue(),
-                monto);
+        try {
+            banco.retirarCuentaBancaria(cuentaAdministrador, (Long) comboBox_cuentaBancariaGiro.getValue(),
+                    monto);
+        } catch (SQLException e){
+            generateDialog("Error", "Problema al conectarse con la base de dato.");
+        }
         generateDialog(" ", banco.getLastError());
     }
 
@@ -987,12 +1158,30 @@ public class ControllerAdministrador extends AbstractController implements Initi
 
     public void switchPermisosEjecutivo(){
         if(tb_permisosEjecutivo.isSelected()){
-            banco.otorgarPermisosSuperiores(Banco.PERMISO_EJECUTIVO, rutBuscado);
+            try {
+                banco.otorgarPermisosSuperiores(Banco.PERMISO_EJECUTIVO, rutBuscado);
+            } catch(SQLException e){
+                generateDialog("Error", "Problema al conectarse con la base de dato.");
+            } catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + rutBuscado + " no se eneucntra en el sistema.");
+            }catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+                return;
+            }
             System.out.println("Otorgando permisos de ejecutivo a: " + rutBuscado);
 
         }
         else{
-            banco.revocarPermisosSuperiores(rutBuscado);
+            try {
+                banco.revocarPermisosSuperiores(rutBuscado);
+            } catch(SQLException e){
+                generateDialog("Error", "Problema al conectarse con la base de dato.");
+            } catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + rutBuscado + " no se eneucntra en el sistema.");
+            }catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+                return;
+            }
             System.out.println("Rebocando permisos de ejecutivo a: " + rutBuscado);
         }
 
@@ -1040,7 +1229,11 @@ public class ControllerAdministrador extends AbstractController implements Initi
             return;
         }
 
-        banco.agregarSucursal(nombre, direccion);
+        try {
+            banco.agregarSucursal(nombre, direccion);
+        }catch (SQLException e){
+            generateDialog("Error", "Problema al conectarse con la base de dato.");
+        }
         generateDialog("", banco.getLastError());
 
         // Actualizando recursos graficos
@@ -1056,12 +1249,106 @@ public class ControllerAdministrador extends AbstractController implements Initi
         if(selectedItem == null)
             generateDialog("Error", "Primero seleccione una sucursal para borrar");
         else {
-            banco.eliminarSucursal(selectedItem.getValue().getNombre());
+            try {
+                banco.eliminarSucursal(selectedItem.getValue().getNombre());
+            } catch (SQLException e){
+                generateDialog("Error", "Problema al conectarse con la base de dato.");
+            }
             generateDialog("", banco.getLastError());
         }
 
         updateSucursalesOnTreeTableView();
         updateSucursalesOnComboBox();
+    }
+
+    /**
+     * Evento gatillado al presionar un toggle button dentro de la ventana de busqueda por criterio.
+     * Realiza un update de las habilitaciones de los recursos de los criterios.
+     * (Ejemplo, habilita el textField de la ciudad a filtrar si es que el criterio de ciudad esta habilitado)
+     */
+    public void habilitarRecursosDeCriterio(){
+        cb_hombreCriterio.setDisable(!tb_criterioGenero.isSelected());
+        cb_mujerCriterio.setDisable(!tb_criterioGenero.isSelected());
+        tf_ciudadCriterio.setDisable(!tb_criterioCiudad.isSelected());
+        tf_dineroTopeCriterio.setDisable(!tb_criterioDineroTope.isSelected());
+    }
+
+    /**
+     * Update del treeTableView
+     */
+    public void filtrarPorCirterio(){
+        ArrayList<Criteria> criterios = new ArrayList<>();
+
+        if(tb_criterioDineroTope.isSelected())
+            if(!tb_criterioDineroTope.getText().isEmpty())
+                criterios.add(new CriterioDinero(Long.parseLong(tf_dineroTopeCriterio.getText())));
+            else
+                generateDialog("Error", "El criterio de busqueda por Dinero no puede ser Vacio");
+
+        if(tb_criterioGenero.isSelected() && cb_mujerCriterio.isSelected() && cb_hombreCriterio.isSelected())
+            criterios.add(new CriterioOr(new CriteriaFemale(), new CriteriaMale()));
+        else if(tb_criterioGenero.isSelected() && cb_mujerCriterio.isSelected())
+            criterios.add(new CriteriaFemale());
+        else if(tb_criterioGenero.isSelected() && cb_hombreCriterio.isSelected())
+            criterios.add(new CriteriaMale());
+        if(tb_criterioCiudad.isSelected())
+            if(!tb_criterioCiudad.getText().isEmpty())
+                criterios.add(new CriteriaCiudad(tf_ciudadCriterio.getText()));
+            else
+                generateDialog("Error", "El criterio de busqueda por Ciudad no puede ser Vacio");
+
+
+        ArrayList<Persona> personas = banco.filtrarPersonas(criterios);
+
+        // Actualizando tabla
+        ObservableList data = FXCollections.observableArrayList();
+        for(Persona p : personas){
+            if(p.getCuentaUsuario() == null)
+                continue;
+            // actualizando la data de la tabla
+            data.add(new PersonaTreeTableView(
+                    p.getRut(), p.getNombres() + " " + p.getApellidos(),
+                    String.valueOf(p.getCuentaUsuario().obtenerDineroTotal()), String.valueOf(p.getCuentaUsuario().getNumeroCuentas())
+            ));
+        }
+
+        TreeTableColumn c1 = (TreeTableColumn) treeTableViewBusquedaCriterio.getColumns().get(0);
+        TreeTableColumn c2 = (TreeTableColumn) treeTableViewBusquedaCriterio.getColumns().get(1);
+        TreeTableColumn c3 = (TreeTableColumn) treeTableViewBusquedaCriterio.getColumns().get(2);
+        TreeTableColumn c4 = (TreeTableColumn) treeTableViewBusquedaCriterio.getColumns().get(3);
+
+        // Linkeando valores de la tabla con valores del objeto
+        c1.setCellValueFactory(
+                new TreeItemPropertyValueFactory<PersonaTreeTableView, String>("rutCliente")
+        );
+
+        c2.setCellValueFactory(
+                new TreeItemPropertyValueFactory<PersonaTreeTableView, String>("nomCliente")
+        );
+
+        c3.setCellValueFactory(
+                new TreeItemPropertyValueFactory<PersonaTreeTableView, String>("dineroTotal")
+        );
+
+        c4.setCellValueFactory(
+                new TreeItemPropertyValueFactory<PersonaTreeTableView, String>("numeroCuent")
+        );
+
+        TreeItem<PersonaTreeTableView> root = new RecursiveTreeItem<>(data, RecursiveTreeObject::getChildren);
+        treeTableViewBusquedaCriterio.setRoot(root);
+
+        treeTableViewBusquedaCriterio.setShowRoot(false);
+    }
+
+    public void dobleClickEnTreeTable(MouseEvent event){
+        if(event.getClickCount() == 2){
+            System.out.println("Lol");
+            TreeItem<PersonaTreeTableView> personaTree = (TreeItem<PersonaTreeTableView>) treeTableViewBusquedaCriterio.getSelectionModel().getSelectedItem();
+            PersonaTreeTableView persona = personaTree.getValue();
+            goModificarUsuario(null);
+            tf_searchRut.setText(persona.getRutCliente());
+            actionSearch(null);
+        }
     }
 }
 

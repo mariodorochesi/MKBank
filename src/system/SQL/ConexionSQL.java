@@ -1,9 +1,8 @@
 package system.SQL;
 
-import system.general.Banco;
-import system.general.Persona;
-import system.general.Sucursal;
-import system.general.Transferencias;
+import system.excepciones.PersonaInexistente;
+import system.excepciones.RutInvalido;
+import system.general.*;
 import system.systemAccounts.CuentaBancaria;
 
 import javax.xml.crypto.dsig.TransformService;
@@ -15,24 +14,26 @@ import java.util.ArrayList;
 public class ConexionSQL {
 
     //Conexion que se establece
-    private  Connection myConn;
+    private Connection myConn;
 
     //Statement a generar
-    private  Statement myStmt;
+    private Statement myStmt;
+
+
 
     /**
      * Constructor de la clase ConexionSQL
      */
 
-    public ConexionSQL() throws Exception {
+    public ConexionSQL() throws SQLException {
         try {
             myConn = DriverManager.getConnection("jdbc:mysql://den1.mysql2.gear.host/mkbank?autoReconnect=true&useSSL=false","mkbank","mkb.-123");
             myStmt = myConn.createStatement();
             System.out.println("Conexion Exitosa a la base de datos");
         }
-        catch (Exception e){
+        catch (SQLException e){
             System.out.println("Conexion Fallida a la base de datos");
-            throw new Exception();
+            throw new SQLException();
         }
     }
 
@@ -79,7 +80,8 @@ public class ConexionSQL {
             }
         }
         catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.out.println("Posible error de SQL server, de Rut invalido o de persona inexistente");
         }
     }
 
@@ -87,7 +89,7 @@ public class ConexionSQL {
      * Metodo que carga las sucursales de la base de datos y las
      * almacena en el mapa de sucursales.
      */
-    public void cargarSucursales(Banco banco){
+    public void cargarSucursales(Banco banco) throws SQLException {
         try{
             ResultSet myRs = myStmt.executeQuery("SELECT * FROM sucursales");
             while(myRs.next()){
@@ -101,8 +103,8 @@ public class ConexionSQL {
                         "Direccion: " + direccion + "\n" +
                         "Nombre: " + nombre + "\n");
             }
-        }catch (Exception e){
-            e.printStackTrace();
+        }catch (SQLException e){
+            throw e;
         }
     }
 
@@ -111,7 +113,7 @@ public class ConexionSQL {
      * y las almacena en el mapa de cuentas bancarias y ademas
      * se las asigna a cada uno de las personas las cuentas respectivas
      */
-    public void cargarCuentas(Banco banco){
+    public void cargarCuentas(Banco banco) throws SQLException {
 
         try{
             ResultSet myRs = myStmt.executeQuery("SELECT * FROM cuentasbancarias");
@@ -132,11 +134,13 @@ public class ConexionSQL {
                 else
                     tipoCuentaBancaria = "Cuenta Ahorro";
 
-                banco.agregarCuentaBancaria(banco.isSuperAdministradorOnBanco("9897123"),banco.isUsuarioOnBanco(titularCuenta),tipoCuentaBancaria,identificador,monto);
+                banco.agregarCuentaBancaria(banco.isSuperAdministradorOnBanco(Utils.RUT_SUPER_ADMIN),banco.isUsuarioOnBanco(titularCuenta),tipoCuentaBancaria,identificador,monto);
             }
         }
-        catch (Exception e){
-            e.printStackTrace();
+        catch (SQLException e){
+            throw e;
+        } catch (PersonaInexistente | RutInvalido personaInexistente) {
+            System.out.println("Posible error de Persona Inexistente o Rut no valido");
         }
     }
 
@@ -144,12 +148,12 @@ public class ConexionSQL {
      * Metodo que carga todas las transferencias de la base de datos
      * y los agrega al mapa de transferencias y ademas lo agrega a las transferencias de las personas
      */
-    public void cargarTransferencias(Banco banco){
+    public void cargarTransferencias(Banco banco) throws SQLException {
 
         try{
             ResultSet myRs = myStmt.executeQuery("SELECT * FROM transferencias");
 
-            while(myRs.next()){
+            while(myRs.next()) {
 
                 String nombreOriginario = myRs.getString("nombreOriginario");
                 String rutOriginario = myRs.getString("rutOriginario");
@@ -163,35 +167,37 @@ public class ConexionSQL {
                 long numeroCuentaDestinatario = myRs.getLong("numeroCuentaDestinatario");
                 int montoTransferencia = myRs.getInt("montoTransferencia");
                 Date mydate = myRs.getDate("fechaTransferencia");
-                int annoNacimiento = Integer.parseInt(mydate.toString().substring(0,4));
-                int mesNacimiento = Integer.parseInt(mydate.toString().substring(5,7));
-                int diaNacimiento = Integer.parseInt(mydate.toString().substring(8,10));
+                int annoNacimiento = Integer.parseInt(mydate.toString().substring(0, 4));
+                int mesNacimiento = Integer.parseInt(mydate.toString().substring(5, 7));
+                int diaNacimiento = Integer.parseInt(mydate.toString().substring(8, 10));
                 String comentario = myRs.getString("comentarioTransferencia");
                 String tipoCuentaOrigenn, tipoCuentaDestinatarioo;
-                if(tipoCuentaOrigen == 0)
+                if (tipoCuentaOrigen == 0)
                     tipoCuentaOrigenn = "Cuenta Vista";
 
-                else if(tipoCuentaDestinatario == 1)
+                else if (tipoCuentaDestinatario == 1)
                     tipoCuentaOrigenn = "Cuenta Corriente";
                 else
                     tipoCuentaOrigenn = "Cuenta de Ahorro";
 
-                if(tipoCuentaDestinatario == 0)
+                if (tipoCuentaDestinatario == 0)
                     tipoCuentaDestinatarioo = "Cuenta Vista";
-                else if(tipoCuentaDestinatario == 1)
+                else if (tipoCuentaDestinatario == 1)
                     tipoCuentaDestinatarioo = "Cuenta Corriente";
                 else
                     tipoCuentaDestinatarioo = "Cuenta de Ahorro";
 
-                Transferencias t = new Transferencias(nombreOriginario,rutOriginario,tipoCuentaOrigenn,numeroCuentaOrigen,
-                        nombreDestinatario,rutDestinatario,tipoCuentaDestinatarioo,numeroCuentaDestinatario,correoDestinatario,
-                        numeroTransferencia,montoTransferencia,annoNacimiento,mesNacimiento,diaNacimiento,comentario);
+                Transferencias t = new Transferencias(nombreOriginario, rutOriginario, tipoCuentaOrigenn, numeroCuentaOrigen,
+                        nombreDestinatario, rutDestinatario, tipoCuentaDestinatarioo, numeroCuentaDestinatario, correoDestinatario,
+                        numeroTransferencia, montoTransferencia, annoNacimiento, mesNacimiento, diaNacimiento, comentario);
 
-                banco.agregarTransferencia(numeroTransferencia,t);
+
+                banco.agregarTransferencia(numeroTransferencia, t);
             }
-        }
-        catch (Exception e){
-            e.printStackTrace();
+        } catch (SQLException e){
+            throw e;
+        } catch (PersonaInexistente | RutInvalido personaInexistente) {
+            personaInexistente.printStackTrace();
         }
     }
 
@@ -199,7 +205,7 @@ public class ConexionSQL {
     *   METODOS PARA AGREGAR A LA BASE DE DATOS SQL
     * */
 
-    public boolean agregarPersonaSQL(Persona p, int permisos){
+    public boolean agregarPersonaSQL(Persona p, int permisos) throws SQLException {
 
         int permisosAdmin = 0;
         int permisosUser = 0;
@@ -223,26 +229,23 @@ public class ConexionSQL {
             }
             return true;
         }
-        catch (Exception e){
-            e.printStackTrace();
-            return false;
+        catch (SQLException e){
+            throw e;
         }
-
     }
 
-    public boolean agregarSucursalSQL(Sucursal sucursal){
+    public boolean agregarSucursalSQL(Sucursal sucursal) throws SQLException {
         try{
             myStmt.executeUpdate("INSERT INTO sucursales VALUES("+sucursal.getCodigoSucursal()+", '" +
                     sucursal.getNombreSucursal() + "', '" + sucursal.getDireccionSucursal() + "')");
             return true;
         }
-        catch (Exception e){
-            e.printStackTrace();
-            return false;
+        catch (SQLException e){
+            throw e;
         }
     }
 
-    public boolean agregarCuentaBancariaSQL(CuentaBancaria cuentaBancaria){
+    public boolean agregarCuentaBancariaSQL(CuentaBancaria cuentaBancaria) throws SQLException {
         int block=0;
         int tipo;
         System.out.println("Agregando la cuenta a SQL");
@@ -262,13 +265,12 @@ public class ConexionSQL {
                     cuentaBancaria.getPersona().getRut()+"','"+block+"','"+tipo+"')");
             return true;
         }
-        catch (Exception e){
-            e.printStackTrace();
-            return false;
+        catch (SQLException e){
+            throw e;
         }
     }
 
-    public boolean agregarTransferenciaSQL(Transferencias t){
+    public boolean agregarTransferenciaSQL(Transferencias t) throws SQLException {
 
         int tipocuentaOrigen = 0;
         int tipoCuentaDestino = 0;
@@ -299,9 +301,8 @@ public class ConexionSQL {
 
             return true;
         }
-        catch (Exception e){
-            e.printStackTrace();
-            return false;
+        catch (SQLException e){
+            throw e;
         }
 
     }
@@ -310,52 +311,46 @@ public class ConexionSQL {
     *   METODOS PARA HACER MODIFICACIONES EN LA BASE
     *   DE DATOS
     * */
-
-
-    public boolean modificarCuentaSQLSuperior(Persona persona, int permisos){
-        try{
-            myStmt.executeUpdate("UPDATE personas SET permisosSuperiores = " + permisos + " WHERE rut = '" + persona.getRut() + "'");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+    public boolean modificarCuentaSQLSuperior(Persona persona, int permisos) throws SQLException {
+        myStmt.executeUpdate("UPDATE personas SET permisosSuperiores = " + permisos + " WHERE rut = '" + persona.getRut() + "'");
         return true;
 
     }
 
-    public boolean modificarCuentaSQLUsuario(Persona persona, int permisos){
+    public boolean modificarCuentaSQLUsuario(Persona persona, int permisos) throws SQLException {
 
         try{
             System.out.println("Modificando permisos para " + persona.getNombres());
             myStmt.executeUpdate("UPDATE personas SET permisosUsuario = " + permisos + " WHERE rut = '" + persona.getRut() + "'");
         }
-        catch (Exception e){
-            System.out.println("No se pudieron modificar los permisos de Usuario para " + persona.getNombres());
-            e.printStackTrace();
+        catch (SQLException e){
+            throw e;
         }
         return true;
     }
 
-    public boolean depositarCuentaSQL(CuentaBancaria cuentaBancaria, int monto){
+    public boolean depositarCuentaSQL(CuentaBancaria cuentaBancaria, int monto) throws SQLException {
         long montoCuenta=0;
         try{
             ResultSet myRs = myStmt.executeQuery("SELECT * FROM cuentasbancarias WHERE numeroCuenta = "+cuentaBancaria.getIdentificador());
             while(myRs.next()){
                 montoCuenta = Long.parseLong(myRs.getString("montoCuenta"));
             }
-
             try{
                 myStmt.executeUpdate("UPDATE cuentasbancarias SET montoCuenta = " +(montoCuenta+monto)+ " WHERE numeroCuenta = " +cuentaBancaria.getIdentificador());
             }
-            catch (Exception e){
-                System.out.println("No se ha podido depositar en la cuenta");
+            catch (SQLException e){
+                throw e;
             }
 
-        }catch(Exception e){}
+        }
+        catch (SQLException e){
+            throw e;
+        }
         return false;
     }
 
-    public boolean transferirCuentaSQL(CuentaBancaria cuentaBancaria, int monto){
+    public boolean transferirCuentaSQL(CuentaBancaria cuentaBancaria, int monto) throws SQLException {
         long montoCuenta=0;
         try{
             ResultSet myRs = myStmt.executeQuery("SELECT * FROM cuentasbancarias WHERE numeroCuenta = "+cuentaBancaria.getIdentificador());
@@ -366,15 +361,18 @@ public class ConexionSQL {
             try{
                 myStmt.executeUpdate("UPDATE cuentasbancarias SET montoCuenta = " +(montoCuenta-monto)+ " WHERE numeroCuenta = " +cuentaBancaria.getIdentificador());
             }
-            catch (Exception e){
-                System.out.println("No se ha podido depositar en la cuenta");
+            catch (SQLException e){
+                throw e;
             }
 
-        }catch(Exception ignored){}
+        }
+        catch (SQLException e){
+            throw e;
+        }
         return false;
     }
 
-    public void editarPersonaSQL(Persona persona){
+    public void editarPersonaSQL(Persona persona) throws SQLException {
         try{
             myStmt.executeUpdate("UPDATE personas SET ciudad = '" + persona.getCiudad() + "', " +
                     "direccion = '" + persona.getDireccion() + "', " +
@@ -383,33 +381,39 @@ public class ConexionSQL {
                     "estadoCivil = '" + persona.getEstadoCivil() + "', " +
                     "nacionalidad = '" + persona.getNacionalidad() + "', " +
                     "sucursales = '" + persona.getSucursalAsociada() + "' WHERE rut = '" + persona.getRut() + "'");
-        }catch(Exception ignored){}
+        }
+        catch (SQLException e){
+            throw e;
+        }
     }
 
-    public void eliminarCuentaBancariaSQL(long identificador){
+    public void eliminarCuentaBancariaSQL(long identificador) throws SQLException {
         try{
             myStmt.executeUpdate("DELETE FROM cuentasBancarias\n" +
                     "WHERE numeroCuenta = '" + identificador + "'");
-        }catch(Exception e){
-            e.printStackTrace();
+        }
+        catch (SQLException e){
+            throw e;
         }
     }
 
-    public void eliminarPersona(String rut){
+    public void eliminarPersona(String rut) throws SQLException {
         try{
             myStmt.executeUpdate("DELETE FROM personas\n" +
                     "WHERE rut = '" + rut + "'");
-        }catch(Exception e){
-            e.printStackTrace();
+        }
+        catch (SQLException e){
+            throw e;
         }
     }
 
-    public void eliminarSucursalSQL(String nombre){
+    public void eliminarSucursalSQL(String nombre) throws SQLException {
         try{
             myStmt.executeUpdate("DELETE FROM sucursales\n"+
                     "WHERE nombreSucursal = '" + nombre + "'");
-        }catch(Exception e){
-            e.printStackTrace();
+        }
+        catch (SQLException e){
+            throw e;
         }
     }
 

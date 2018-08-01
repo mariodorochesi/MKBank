@@ -21,6 +21,7 @@ import system.systemAccounts.CuentaBancariaRecursiveTree;
 import system.systemAccounts.CuentaUsuario;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 public class ControllerUser extends AbstractController implements Initializable {
@@ -65,7 +66,7 @@ public class ControllerUser extends AbstractController implements Initializable 
     @FXML
     private JFXTextField tf_rutDestino;
 
-    private static Banco banco;
+    private Banco banco = Banco.getInstance();
     private static CuentaUsuario cuentaUsuario;
 
     @Override
@@ -199,15 +200,6 @@ public class ControllerUser extends AbstractController implements Initializable 
     }
 
     /**
-     * Utilizado para establecer la instancia banco que se va a utilizar
-     * a lo largo de la ejecucion del programa
-     * @param banco Instancia del banco
-     */
-    public static void setBanco(Banco banco){
-        ControllerUser.banco = banco;
-    }
-
-    /**
      * Accion gatillada al hacer click en el boton Login, permitiendo cerrar
      * sesion y volver a la pantalla de login.
      * @param event .
@@ -229,11 +221,16 @@ public class ControllerUser extends AbstractController implements Initializable 
     public void hacerTransferencia(){
         CuentaBancaria cuentaOrigen = banco.isCuentaBancariaOnBanco((Long) comboBox_cuentasBancarias.getValue());
 
-        banco.transferirDinero(cuentaOrigen, Long.parseLong(tf_numeroDeCuentaDestino.getText()),
-                (String) comboBox_tipoDeCuentaDestino.getValue(), tf_rutDestino.getText(),
-                Integer.parseInt(tf_monto.getText()), tf_comentario.getText());
+        try {
 
-        generateDialog("Mensaje", banco.getLastError());
+            banco.transferirDinero(cuentaOrigen, Long.parseLong(tf_numeroDeCuentaDestino.getText()),
+                    (String) comboBox_tipoDeCuentaDestino.getValue(), tf_rutDestino.getText(),
+                    Integer.parseInt(tf_monto.getText()), tf_comentario.getText());
+
+            generateDialog("Mensaje", banco.getLastError());
+        }catch (SQLException e){
+            generateDialog("Error", "Problemas al conectarse a la Base de Datos");
+        }
     }
 
     /**
@@ -278,7 +275,7 @@ public class ControllerUser extends AbstractController implements Initializable 
      */
     private void updateHistorialTransferencias(){
         ObservableList data = FXCollections.observableArrayList();
-        for(Transferencias t : cuentaUsuario.historialTransacciones(10)){
+        for(Transferencias t : banco.obtenerListaTransferencia(cuentaUsuario,10)){
             if(cuentaUsuario.getPersona().getRut().equals(t.getRutDestinatario()))
                 data.add(
                         new TransferenciasTreeTableView(String.valueOf(t.getNumeroTransferencia()), String.valueOf(t.getNumeroCuentaDestinatario()),

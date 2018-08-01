@@ -3,22 +3,22 @@ package system.general;
 import system.SQL.ConexionSQL;
 import system.general.Banco;
 
+import java.sql.SQLException;
+
 public class Loader {
 
     //Banco donde cargar los Datos
-    private Banco banco;
+    private Banco banco = Banco.getInstance();
     //Conexion SQL desde donde obtener los datos
     private ConexionSQL conexionSQL;
 
 
     /**
      * Constructor del objeto Loader
-     * @param banco Banco a donde se desean cargar los datos
      * @param conexionSQL ConexionSQL desde donde se desean obtener los datos
      */
 
-    public Loader(Banco banco, ConexionSQL conexionSQL){
-        this.banco = banco;
+    public Loader(ConexionSQL conexionSQL){
         this.conexionSQL = conexionSQL;
     }
 
@@ -28,11 +28,12 @@ public class Loader {
      * propios de la clase conexionSQL
      */
 
-    public void loadFromSQL(){
-        conexionSQL.cargarSucursales(banco);
-        conexionSQL.cargarPersonas(banco);
-        conexionSQL.cargarCuentas(banco);
-        conexionSQL.cargarTransferencias(banco);
+    public void loadFromSQL() throws SQLException{
+            conexionSQL.cargarSucursales(banco);
+            conexionSQL.cargarSucursales(banco);
+            conexionSQL.cargarPersonas(banco);
+            conexionSQL.cargarCuentas(banco);
+            conexionSQL.cargarTransferencias(banco);
     }
 
 

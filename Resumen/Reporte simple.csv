@@ -1,12 +1,11 @@
 Ciudad,Valor,Usuarios
-CASD,0,0
-VINA DEL MAR,99,3
-SANTIAGO,0,0
-SNACK,0,1
-SAN ESTEBAN,0,1
+VINA DEL MAR,388,5
+LOS ANDES,274,1
+QUILPUE,64,1
+IQUIQUE,12,1
 
-T. Clientes,5
-T. Cuentas B,		6
-C. Mas Valor,		VINA DEL MAR,99
-C. Menos Valor,	CASD,0
-T. Valor,			99
+T. Clientes,8
+T. Cuentas B,		11
+C. Mas Valor,		VINA DEL MAR,388
+C. Menos Valor,	IQUIQUE,12
+T. Valor,			738

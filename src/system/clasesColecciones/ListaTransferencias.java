@@ -1,12 +1,14 @@
 package system.clasesColecciones;
 
 import system.general.Transferencias;
+import system.interfaces.Container;
+import system.interfaces.Iterator;
 import system.systemAccounts.CuentaBancaria;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-public class ListaTransferencias {
+public class ListaTransferencias implements Container {
 
     //Lista de Transferencias
     private ArrayList<Transferencias> listaTransferencias;
@@ -122,4 +124,30 @@ public class ListaTransferencias {
         }
         catch (Exception ignored){ }
     }
+
+    @Override
+    public Iterator getIterator(){
+        return new IteradorTransferencias();
+    }
+
+    private class IteradorTransferencias implements Iterator{
+
+        int index;
+
+        @Override
+        public boolean hasNext(){
+            if(listaTransferencias.get(index) != null)
+                return true;
+            return false;
+        }
+
+        @Override
+        public Transferencias next(){
+            if(this.hasNext()){
+                return listaTransferencias.get(index++);
+            }
+            return null;
+        }
+    }
+
 }

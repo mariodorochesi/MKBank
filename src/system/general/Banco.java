@@ -3,6 +3,7 @@ package system.general;
 import com.jfoenix.controls.JFXTreeTableView;
 import com.jfoenix.controls.RecursiveTreeItem;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
+import criteriosBusqueda.CriteriaAnd;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.ScatterChart;
@@ -11,12 +12,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
-import system.SQL.ConexionSQL;
 import system.clasesColecciones.*;
+import system.excepciones.PersonaInexistente;
+import system.excepciones.RutInvalido;
+import system.interfaces.Criteria;
 import system.interfaces.Reportable;
 import system.systemAccounts.*;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +30,6 @@ public class Banco implements Reportable {
     /*
      Tasas de Interes
     * */
-
     private float tasaInteresPrestamo; //No implementado aun
     private float tasaInteres; //No implementado aun
 
@@ -47,6 +50,8 @@ public class Banco implements Reportable {
 
     private Saver saver;
 
+    private static Banco nuestroBanco = new Banco();
+
     //Constante Identificador Ejecutivo
     public static final int PERMISO_EJECUTIVO = 1;
     //Constante Identificador Administrador
@@ -58,14 +63,13 @@ public class Banco implements Reportable {
      * Constructor por defecto del Banco
      */
 
-    public Banco(){
+    private Banco(){
         this.tasaInteres = 0;
         this.tasaInteresPrestamo = 0;
         mapaCuentaBancarias = new MapaCuentaBancarias();
         mapaPersonas = new MapaPersonas();
         mapaTransferencias = new MapaTransferencias();
         mapaSucursales = new MapaSucursales();
-        //listaSucursales = new ArrayList<>();
         lastError = "";
     }
 
@@ -122,8 +126,7 @@ public class Banco implements Reportable {
                                int diaNacimiento ,
                                String estadoCivil ,
                                String genero,
-                               String tipoCuentaPersona)
-    {
+                               String tipoCuentaPersona) throws PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             System.out.println("La persona ya existia previamente en el mapa. No ha sido agregada");
             lastError = "La persona ya existia previamente en el mapa. No ha sido agregada";
@@ -186,8 +189,7 @@ public class Banco implements Reportable {
                                String estadoCivil,
                                String genero,
                                String tipoCuentaPersona,
-                               String tipoCuentaBancaria)
-    {
+                               String tipoCuentaBancaria) throws PersonaInexistente, RutInvalido {
 
         if(mapaPersonas.existePersona(rut)){
             System.out.println("La persona ya existia previamente en el mapa. No ha sido agregada");
@@ -252,8 +254,7 @@ public class Banco implements Reportable {
                                int diaNacimiento,
                                String estadoCivil,
                                String genero,
-                               String sucursalAsociada)
-    {
+                               String sucursalAsociada) throws SQLException, PersonaInexistente, RutInvalido {
 
         if(mapaPersonas.existePersona(rut)){
             System.out.println("La persona ya existia previamente en el mapa. No ha sido agregada");
@@ -323,8 +324,7 @@ public class Banco implements Reportable {
                                String estadoCivil,
                                String genero,
                                String tipoCuentaPersona ,
-                               String tipoCuentaBancaria)
-    {
+                               String tipoCuentaBancaria) throws PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             System.out.println("La persona ya existia previamente en el mapa. No ha sido agregada");
             lastError = "La persona ya existia previamente en el mapa. No ha sido agregada";
@@ -382,8 +382,7 @@ public class Banco implements Reportable {
                                int mesNacimiento,
                                int diaNacimiento,
                                String estadoCivil,
-                               String genero)
-    {
+                               String genero) throws SQLException, PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             System.out.println("La persona ya existia previamente en el mapa. No ha sido agregada");
             lastError = "La persona ya existia previamente en el mapa. No ha sido agregada";
@@ -443,8 +442,7 @@ public class Banco implements Reportable {
                                String estadoCivil,
                                String genero,
                                String tipoCuentaBancaria,
-                               String sucursalAsociada)
-    {
+                               String sucursalAsociada) throws SQLException, PersonaInexistente, RutInvalido {
 
         if(mapaPersonas.existePersona(rut)){
             System.out.println("La persona ya existia previamente en el mapa. No ha sido agregada");
@@ -514,6 +512,7 @@ public class Banco implements Reportable {
             String genero,
             String contrasena,
             String sucursal){
+
         System.out.println("Agregando a " + nombre + " " + apellido);
 
         Persona nuevaPersona = new Persona(nombre,apellido,rut,ciudad,direccion,correoElectronico,telefono,nacionalidad,
@@ -538,7 +537,6 @@ public class Banco implements Reportable {
      * @param direccion     - Direccion de la sucursal que se esta agregando
      * @param codigo        - Codigo de la sucursal que se esta agregando
      */
-
     public void agregarSucursal(String nombre, String direccion, int codigo){
         // TODO: esto deberia agregar una nueva sucursal al mapa de sucursales con los parametros ignresados
         mapaSucursales.agregarSucursal(nombre, direccion, codigo);
@@ -551,7 +549,7 @@ public class Banco implements Reportable {
      * @param direccion     - Direccion de la nueva sucursal
      */
 
-    public void agregarSucursal(String nombre, String direccion){
+    public void agregarSucursal(String nombre, String direccion) throws SQLException {
         mapaSucursales.agregarSucursal(nombre, direccion, mapaSucursales.generarIdentificador());
         lastError = mapaSucursales.getLastError();
 
@@ -564,7 +562,8 @@ public class Banco implements Reportable {
      * @param nombre Nombre de la sucursal a eliminar
      */
 
-    public void eliminarSucursal(String nombre){
+    public void eliminarSucursal(String nombre) throws SQLException {
+
         if(!mapaSucursales.existeSucursal(nombre)){
             lastError = "Error, la sucursal no existe";
             return;
@@ -592,10 +591,10 @@ public class Banco implements Reportable {
      * @param rut Rut de la Persona
      */
 
-    public void otorgarPermisosUsuarioCarga(String rut){
+    public void otorgarPermisosUsuarioCarga(String rut) throws PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             Persona persona = mapaPersonas.obtenerPersona(rut);
-            persona.setCuentaUsuario(new CuentaUsuario(persona));
+            persona.otorgarPermisosUsuario();
         }
     }
 
@@ -606,15 +605,15 @@ public class Banco implements Reportable {
      * @param rut Rut de la Persona
      */
 
-    public void otorgarPermisosSuperioresCarga(int permisos,String rut){
+    public void otorgarPermisosSuperioresCarga(int permisos,String rut) throws PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             Persona persona = mapaPersonas.obtenerPersona(rut);
             if(permisos == Banco.PERMISO_EJECUTIVO)
-                persona.setCuentaEjecutivo(new CuentaEjecutivo(persona));
+                persona.otorgarPermisosEjecutivo();
             else if(permisos == Banco.PERMISO_ADMINISTRADOR)
-                persona.setCuentaAdministrador(new CuentaAdministrador(persona));
+                persona.otorgarPermisosAdministrador();
             else if(permisos == Banco.PERMISO_SUPERADMINISTRADOR)
-                persona.setCuentaSuperAdministrador(new CuentaSuperAdministrador(persona));
+                persona.otorgarPermisosSuperAdministrador();
             else
                 System.out.println("Permisos no validos para la persona " + persona.getNombres() + " " + persona.getApellidos());
         }
@@ -625,11 +624,11 @@ public class Banco implements Reportable {
      * @param rut Rut de la Persona
      */
 
-    public void otorgarPermisosUsuario(String rut){
+    public void otorgarPermisosUsuario(String rut) throws SQLException, PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             Persona persona = mapaPersonas.obtenerPersona(rut);
             saver.modificarPermisoUsuarioSQL(persona, 1);
-            persona.setCuentaUsuario(new CuentaUsuario(persona));
+            persona.otorgarPermisosUsuario();
         }
     }
 
@@ -639,15 +638,15 @@ public class Banco implements Reportable {
      * @param rut Rut de la Persona
      */
 
-    public void otorgarPermisosSuperiores(int permisos,String rut){
+    public void otorgarPermisosSuperiores(int permisos,String rut) throws SQLException, PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             Persona persona = mapaPersonas.obtenerPersona(rut);
             if(permisos == Banco.PERMISO_EJECUTIVO)
-                persona.setCuentaEjecutivo(new CuentaEjecutivo(persona));
+                persona.otorgarPermisosEjecutivo();
             else if(permisos == Banco.PERMISO_ADMINISTRADOR)
-                persona.setCuentaAdministrador(new CuentaAdministrador(persona));
+                persona.otorgarPermisosAdministrador();
             else if(permisos == Banco.PERMISO_SUPERADMINISTRADOR)
-                persona.setCuentaSuperAdministrador(new CuentaSuperAdministrador(persona));
+                persona.otorgarPermisosSuperAdministrador();
             else
                 System.out.println("Permisos no validos para la persona " + persona.getNombres() + " " + persona.getApellidos());
             saver.modificarPermisosSQLSuperior(persona, permisos);
@@ -659,12 +658,10 @@ public class Banco implements Reportable {
      * @param rut Rut de la Përsona
      */
 
-    public void revocarPermisosSuperiores(String rut){
+    public void revocarPermisosSuperiores(String rut) throws SQLException, PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             Persona persona = mapaPersonas.obtenerPersona(rut);
-            persona.setCuentaEjecutivo(null);
-            persona.setCuentaAdministrador(null);
-            persona.setCuentaSuperAdministrador(null);
+            persona.revocarPermisosSuperiores();
             saver.modificarPermisosSQLSuperior(persona, 0);
             System.out.println("Permisos revocados y actualizados en la BD");
         }
@@ -726,8 +723,7 @@ public class Banco implements Reportable {
 
     public void agregarCuentaBancaria(CuentaAdministrador cuentaAdministrador,
                                       CuentaUsuario cuentaUsuario,
-                                      String tipoCuentaBancaria)
-    {
+                                      String tipoCuentaBancaria) throws SQLException {
 
         long identificador = generarIdentificador();
         if(cuentaAdministrador.crearCuentaBancaria(cuentaUsuario,tipoCuentaBancaria,identificador)){
@@ -751,8 +747,7 @@ public class Banco implements Reportable {
 
     public void agregarCuentaBancaria(CuentaEjecutivo cuentaEjecutivo,
                                       CuentaUsuario cuentaUsuario,
-                                      String tipoCuentaBancaria)
-    {
+                                      String tipoCuentaBancaria) throws SQLException {
 
         long identificador = generarIdentificador();
         if(cuentaEjecutivo.crearCuentaBancaria(cuentaUsuario,tipoCuentaBancaria,identificador)){
@@ -776,7 +771,7 @@ public class Banco implements Reportable {
 
     public void eliminarCuentaBancaria(CuentaSuperAdministrador cuentaSuperAdministrador,
                                        CuentaUsuario cuentaUsuario,
-                                       long identificador){
+                                       long identificador) throws SQLException {
         if(cuentaSuperAdministrador.eliminarCuentaBancaria(cuentaUsuario,identificador)){
             mapaCuentaBancarias.eliminarCuentaBancaria(identificador);
             System.out.println("La cuenta " + identificador + " ha sido eliminada del mapa global de cuentas bancarias." + "" +
@@ -800,7 +795,7 @@ public class Banco implements Reportable {
 
     public void eliminarCuentaBancaria(CuentaAdministrador cuentaAdministrador,
                                        CuentaUsuario cuentaUsuario,
-                                       long identificador){
+                                       long identificador) throws SQLException {
 
         if(cuentaAdministrador.eliminarCuentaBancaria(cuentaUsuario,identificador)){
             mapaCuentaBancarias.eliminarCuentaBancaria(identificador);
@@ -827,7 +822,7 @@ public class Banco implements Reportable {
 
     public void eliminarCuentaBancaria(CuentaEjecutivo cuentaEjecutivo,
                                        CuentaUsuario cuentaUsuario,
-                                       long identificador){
+                                       long identificador) throws SQLException {
         if(cuentaEjecutivo.eliminarCuentaBancaria(cuentaUsuario,identificador)){
             mapaCuentaBancarias.eliminarCuentaBancaria(identificador);
             System.out.println("La cuenta " + identificador + " ha sido eliminada del mapa global de cuentas bancarias." + "" +
@@ -851,7 +846,7 @@ public class Banco implements Reportable {
 
     public void depositarCuentaBancaria(CuentaAdministrador cuentaAdministrador,
                                         long identificador,
-                                        int monto){
+                                        int monto) throws SQLException {
         CuentaBancaria cuentaBancaria = isCuentaBancariaOnBanco(identificador);
         if(cuentaBancaria != null){
             final boolean resultado = cuentaAdministrador.depositarCuentaBancaria(cuentaBancaria.getPersona().getCuentaUsuario(),identificador,monto);
@@ -874,8 +869,7 @@ public class Banco implements Reportable {
 
     public void depositarCuentaBancaria(CuentaEjecutivo cuentaEjecutivo,
                                         long identificador,
-                                        int monto)
-    {
+                                        int monto) throws SQLException {
         CuentaBancaria cuentaBancaria = isCuentaBancariaOnBanco(identificador);
         if(cuentaBancaria != null){
             final boolean resultado = cuentaEjecutivo.depositarCuentaBancaria(cuentaBancaria.getPersona().getCuentaUsuario(),identificador,monto);
@@ -899,7 +893,7 @@ public class Banco implements Reportable {
 
     public void retirarCuentaBancaria(CuentaAdministrador cuentaAdministrador,
                                       long identificador,
-                                      int monto){
+                                      int monto) throws SQLException {
 
         CuentaBancaria cuentaBancaria = isCuentaBancariaOnBanco(identificador);
         if(cuentaBancaria != null){
@@ -923,7 +917,7 @@ public class Banco implements Reportable {
 
     public void retirarCuentaBancaria(CuentaEjecutivo cuentaEjecutivo,
                                       long identificador,
-                                      int monto){
+                                      int monto) throws SQLException {
 
         CuentaBancaria cuentaBancaria = isCuentaBancariaOnBanco(identificador);
         if(cuentaBancaria != null){
@@ -954,8 +948,7 @@ public class Banco implements Reportable {
                                     String tipoCuenta,
                                     String rutDestino,
                                     int monto,
-                                    String comentario)
-    {
+                                    String comentario) throws SQLException {
         CuentaBancaria cuentaDestino = mapaCuentaBancarias.obtenerCuentaBancaria(identificadorCuentaDestino);
         if(cuentaDestino == null){
             lastError = "La cuenta destino no existe. Compruebe los datos";
@@ -1005,7 +998,7 @@ public class Banco implements Reportable {
      * @param t Transferencia a Cargar
      */
 
-    public void agregarTransferencia(long id,Transferencias t){
+    public void agregarTransferencia(long id,Transferencias t) throws PersonaInexistente, RutInvalido {
         mapaTransferencias.agregarTranferencia(id,t);
         CuentaUsuario origen = isUsuarioOnBanco(t.getRutOriginario());
         CuentaUsuario destino = isUsuarioOnBanco(t.getRutDestinatario());
@@ -1049,7 +1042,7 @@ public class Banco implements Reportable {
      * @param rut Rut de la Persona a Borrar
      * @return True si borra a la Persona / False en caso contrario
      */
-    public boolean eliminarPersona(CuentaSuperAdministrador cuentaSuperAdministrador ,String rut){
+    public boolean eliminarPersona(CuentaSuperAdministrador cuentaSuperAdministrador ,String rut) throws SQLException, PersonaInexistente, RutInvalido {
         if(!mapaPersonas.existePersona(rut)){
             System.out.println("La persona que desea eliminar no se encuentra en el banco.");
             lastError = "La persona ya existia previamente en el mapa. No ha sido agregada";
@@ -1119,7 +1112,7 @@ public class Banco implements Reportable {
      * @return True si borra a la Persona / False en caso contrario
      */
 
-    public boolean eliminarPersona(CuentaAdministrador cuentaAdministrador , String rut){
+    public boolean eliminarPersona(CuentaAdministrador cuentaAdministrador , String rut) throws SQLException, PersonaInexistente, RutInvalido {
         if(!mapaPersonas.existePersona(rut)){
             System.out.println("La persona que desea eliminar no se encuentra en el banco.");
             return false;
@@ -1170,7 +1163,7 @@ public class Banco implements Reportable {
      * @param rut Rut de la Persona a Borrar
      * @return True si borra a la Persona / False en caso contrario
      */
-    public boolean eliminarPersona(CuentaEjecutivo cuentaEjecutivo, String rut){
+    public boolean eliminarPersona(CuentaEjecutivo cuentaEjecutivo, String rut) throws SQLException, PersonaInexistente, RutInvalido {
         if(!mapaPersonas.existePersona(rut)){
             System.out.println("La persona que desea eliminar no se encuentra en el banco.");
             return false;
@@ -1215,7 +1208,7 @@ public class Banco implements Reportable {
      * @return True si pudo eliminar al Administrador, False en caso contrario
      */
 
-    public boolean eliminarAdministrador(String rut){
+    public boolean eliminarAdministrador(String rut) throws PersonaInexistente, RutInvalido {
         Persona personaEliminarCuentaAdministrador = mapaPersonas.obtenerPersona(rut);
         if(personaEliminarCuentaAdministrador.getCuentaUsuario() != null) {
             if (!eliminarUsuario(personaEliminarCuentaAdministrador.getRut())) {
@@ -1239,7 +1232,7 @@ public class Banco implements Reportable {
      * @return True si pudo eliminar al Ejectuvo, False en caso contrario
      */
 
-    public boolean eliminarEjecutivo(String rut){
+    public boolean eliminarEjecutivo(String rut) throws PersonaInexistente, RutInvalido {
         Persona personaEliminarCuentaEjecutivo = mapaPersonas.obtenerPersona(rut);
         if(personaEliminarCuentaEjecutivo.getCuentaUsuario() != null) {
             if (!eliminarUsuario(personaEliminarCuentaEjecutivo.getRut())) {
@@ -1264,7 +1257,7 @@ public class Banco implements Reportable {
      * @return True si pudo eliminar a la persona, false en caso contrario
      */
 
-    public boolean eliminarUsuario(String rut){
+    public boolean eliminarUsuario(String rut) throws PersonaInexistente, RutInvalido {
         Persona personaEliminarCuentaUsuario = mapaPersonas.obtenerPersona(rut);
         if(personaEliminarCuentaUsuario.getCuentaUsuario() == null)
             return false;
@@ -1311,7 +1304,7 @@ public class Banco implements Reportable {
      * @return
      */
 
-    public boolean eliminarPersonaBanco(Persona personaEliminar){
+    public boolean eliminarPersonaBanco(Persona personaEliminar) throws SQLException {
         System.out.println("Eliminando a la Persona " + personaEliminar.getNombres() +
                 " " + personaEliminar.getApellidos() + " del mapa de Personas");
         saver.eliminarPersona(personaEliminar.getRut());
@@ -1354,7 +1347,7 @@ public class Banco implements Reportable {
                               int diaNacimiento,
                               String estadoCivil,
                               String genero,
-                              String sucursalAsociada){
+                              String sucursalAsociada) throws SQLException {
 
         persona.setNombres(nombre);
         persona.setApellidos(apellidos);
@@ -1392,7 +1385,7 @@ public class Banco implements Reportable {
      *         null en caso contrario
      */
 
-    public CuentaSuperAdministrador isSuperAdministradorOnBanco(String rut){
+    public CuentaSuperAdministrador isSuperAdministradorOnBanco(String rut) throws PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             return mapaPersonas.obtenerPersona(rut).getCuentaSuperAdministrador();
         }
@@ -1407,7 +1400,7 @@ public class Banco implements Reportable {
      *         null en caso contrario
      */
 
-    public CuentaAdministrador isAdministradorOnBanco(String rut){
+    public CuentaAdministrador isAdministradorOnBanco(String rut) throws PersonaInexistente, RutInvalido {
 
             if(mapaPersonas.existePersona(rut)){
                 return mapaPersonas.obtenerPersona(rut).getCuentaAdministrador();
@@ -1424,7 +1417,7 @@ public class Banco implements Reportable {
      * @return cuentaEjecutivosi es que fue encontrado en el mapa
      *         null en caso contrario
      */
-    public CuentaEjecutivo isEjecutivoOnBanco(String rut){
+    public CuentaEjecutivo isEjecutivoOnBanco(String rut) throws PersonaInexistente, RutInvalido {
 
         if(mapaPersonas.existePersona(rut)){
             return mapaPersonas.obtenerPersona(rut).getCuentaEjecutivo();
@@ -1439,7 +1432,7 @@ public class Banco implements Reportable {
      * @return cuentaUsuario si es que fue encontrado en el mapa
      *         null en caso contrario
      */
-    public CuentaUsuario isUsuarioOnBanco(String rut){
+    public CuentaUsuario isUsuarioOnBanco(String rut) throws PersonaInexistente, RutInvalido {
         if(mapaPersonas.existePersona(rut)){
             return mapaPersonas.obtenerPersona(rut).getCuentaUsuario();
         }
@@ -1454,7 +1447,7 @@ public class Banco implements Reportable {
      * @return Persona si es que fue encontrado en el mapa
      *         null en caso contrario
      */
-    public Persona isPersonaOnBanco(String rut){
+    public Persona isPersonaOnBanco(String rut) throws PersonaInexistente, RutInvalido {
         return mapaPersonas.obtenerPersona(rut);
     }
 
@@ -1499,10 +1492,10 @@ public class Banco implements Reportable {
      * @param rut   - Rut de la persona que se quiere comprar que tiene el permiso
      * @return
      */
-    public boolean contieneCuentaEjecutivo(String rut) {
+    public boolean contieneCuentaEjecutivo(String rut) throws PersonaInexistente, RutInvalido {
         Persona p = isPersonaOnBanco(rut);
         // TODO: cambiar esto por una excepcion
-        return p != null && p.getCuentaEjecutivo() != null;
+        return p != null && p.isEjecutivo();
     }
 
     /**
@@ -1510,10 +1503,10 @@ public class Banco implements Reportable {
      * @param rut   - Rut de la persona que se quiere comprar que tiene el permiso
      * @return
      */
-    public boolean contieneCuentaAdministrador(String rut) {
+    public boolean contieneCuentaAdministrador(String rut) throws PersonaInexistente, RutInvalido {
         Persona p = isPersonaOnBanco(rut);
         // TODO: cambiar esto por una excepcion
-        return p != null && p.getCuentaAdministrador() != null;
+        return p != null && p.isAdministrador();
     }
 
     /**
@@ -1521,10 +1514,10 @@ public class Banco implements Reportable {
      * @param rut   - Rut de la persona que se quiere comprar que tiene el permiso
      * @return
      */
-    public boolean contieneCuentaSuperAdministrador(String rut) {
+    public boolean contieneCuentaSuperAdministrador(String rut) throws PersonaInexistente, RutInvalido {
         Persona p = isPersonaOnBanco(rut);
         // TODO: cambiar esto por una excepcion
-        return p != null && p.getCuentaSuperAdministrador() != null;
+        return p != null && p.isSuperAdministrador();
     }
 
     /**
@@ -1532,10 +1525,10 @@ public class Banco implements Reportable {
      * @param rut   - Rut de la persona que se quiere comprar que tiene el permiso
      * @return
      */
-    public boolean contieneCuentaUsuario(String rut) {
+    public boolean contieneCuentaUsuario(String rut) throws PersonaInexistente, RutInvalido {
         Persona p = isPersonaOnBanco(rut);
         // TODO: cambiar esto por una excepcion
-        return p != null && p.getCuentaUsuario() != null;
+        return p != null && p.isUsuario();
     }
 
     /**
@@ -1558,14 +1551,14 @@ public class Banco implements Reportable {
      * Inicializa a todos los clientes, con sus respectivas cuentas asociadas
      */
 
-    public void loadFiles(){
+    public void loadFiles()throws PersonaInexistente {
         Persona fakeOne = new Persona("system", "SuperAdmin", "0000000-0", "",
                 "", "", "",
                 "", 1995, 10, 19, "", "");
         fakeOne.setCuentaSuperAdministrador((new CuentaSuperAdministrador(fakeOne)));
 
         // Leyendo archivo de personas
-        try {
+        try{
             String filePath = (new File(".").getAbsolutePath()).replace(".", "");
             filePath = filePath + "archivoprueba.csv";
             //System.out.println((new File("/archivoprueba.csv").getAbsolutePath()));
@@ -1600,6 +1593,8 @@ public class Banco implements Reportable {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (RutInvalido rutInvalido) {
+            rutInvalido.printStackTrace();
         }
 
     }
@@ -1609,7 +1604,7 @@ public class Banco implements Reportable {
      * Carga todos los datos de una Cuenta
      * @param cortado
      */
-    private void loadPeopleFromSplitedLine(String[] cortado){
+    private void loadPeopleFromSplitedLine(String[] cortado) throws PersonaInexistente, RutInvalido {
         final int SINCUENTA = 0;
         final int CUENTA_EJECUTIVO = 1;
         final int CUENTA_ADMINISTRADOR = 2;
@@ -1684,7 +1679,7 @@ public class Banco implements Reportable {
      * Carga todas las cuentas bancarias a partir de un archivo
      * @param cortado
      */
-    private void loadAccountsFromSplitedLine(String[] cortado){
+    private void loadAccountsFromSplitedLine(String[] cortado) throws PersonaInexistente, RutInvalido {
         Persona p = isPersonaOnBanco(cortado[0]);
         if(p == null) {
             System.out.println("Error intentando crear una cuenta para una persona que no existe");
@@ -1812,14 +1807,7 @@ public class Banco implements Reportable {
      */
 
     public int totalclientesEnCiudad(String ciudad){
-        int total = 0;
-
-        for(Persona p : mapaPersonas.values()){
-            if(isUsuarioOnBanco(p.getRut()) != null && p.getCiudad().equals(ciudad))
-                total++;
-        }
-
-        return total;
+        return mapaPersonas.totalClientesEnCiudad(ciudad);
     }
 
     /**
@@ -1828,14 +1816,7 @@ public class Banco implements Reportable {
      */
 
     public int totalclientes(){
-        int total = 0;
-
-        for(Persona p : mapaPersonas.values()){
-            if(isUsuarioOnBanco(p.getRut()) != null)
-                total++;
-        }
-
-        return total;
+        return mapaPersonas.totalClientes();
     }
 
     /*
@@ -1966,4 +1947,19 @@ public class Banco implements Reportable {
         reportLines.add("C. Mas Valor,\t\t" + ciudadMasAdinerada + "," + ciudadMasAdinerada_valor);
         reportLines.add("C. Menos Valor,\t" + ciudadMenosAdinerada + "," + ciudadMenosAdinerada_valor);
     }
+
+    public ArrayList<Persona> filtrarPersonas(ArrayList<Criteria> criteria){
+
+        CriteriaAnd filtrar = new CriteriaAnd(criteria);
+
+        ArrayList<Persona> resultado = new ArrayList<>();
+        resultado.addAll(mapaPersonas.values());
+
+        return filtrar.meetCriteria(resultado);
+    }
+
+    public static Banco getInstance(){
+        return nuestroBanco;
+    }
+
 }

@@ -2,7 +2,10 @@ package system.systemAccounts;
 
 import system.general.Persona;
 
-public class CuentaAdministrador extends Cuenta {
+
+import java.lang.annotation.Documented;
+
+public class CuentaAdministrador extends Cuenta{
 
     private boolean cuentaBloqueada;
 

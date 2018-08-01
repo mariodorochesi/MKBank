@@ -1,14 +1,16 @@
 package Graphics;
 
 
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXPasswordField;
-import com.jfoenix.controls.JFXTextField;
+import com.jfoenix.controls.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
+import system.excepciones.PersonaInexistente;
+import system.excepciones.RutInvalido;
 import system.general.Banco;
 import system.systemAccounts.CuentaAdministrador;
 import system.systemAccounts.CuentaEjecutivo;
@@ -30,7 +32,10 @@ public class ControllerLogin extends AbstractController implements Initializable
     @FXML
     private JFXComboBox comboBox;
 
-    private static Banco banco;
+    @FXML
+    private StackPane stackPane;
+
+    private Banco banco = Banco.getInstance();
 
     /**
      * Metodo activado al precionar el boton "Entrar"
@@ -53,10 +58,19 @@ public class ControllerLogin extends AbstractController implements Initializable
 
     private void loginAction(){
         if(comboBox.getValue().equals("Ejecutivo")){
-            CuentaEjecutivo cuentaEjecutivo = banco.isEjecutivoOnBanco(userField.getText());
+            CuentaEjecutivo cuentaEjecutivo;
+            try {
+                cuentaEjecutivo = banco.isEjecutivoOnBanco(userField.getText());
+            }catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + userField.getText() + " no se eneucntra en el sistema.");
+                return;
+            } catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+                return;
+            }
+
             if(cuentaEjecutivo != null &&
                     cuentaEjecutivo.getPersona().contrasenaEquals(passwordField.getText())) {
-                ControllerEjecutivo.setBanco(banco);
                 ControllerEjecutivo.setCuentaEjecutivo(cuentaEjecutivo);
                 getScreenController().activate("ScreenEjecutivo");
                 clearLabel();
@@ -67,10 +81,18 @@ public class ControllerLogin extends AbstractController implements Initializable
             clear();
         }
         else if(comboBox.getValue().equals("Administrador")) {
-            CuentaAdministrador cuentaAdministrador = banco.isAdministradorOnBanco(userField.getText());
+            CuentaAdministrador cuentaAdministrador;
+            try {
+                cuentaAdministrador = banco.isAdministradorOnBanco(userField.getText());
+            } catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + userField.getText() + " no se eneucntra en el sistema.");
+                return;
+            } catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+                return;
+            }
             if(cuentaAdministrador != null &&
                     cuentaAdministrador.getPersona().contrasenaEquals(passwordField.getText())){
-                ControllerAdministrador.setBanco(banco);
                 ControllerAdministrador.setCuentaAdministrador(cuentaAdministrador);
                 getScreenController().activate("ScreenAdministrador");
                 clearLabel();
@@ -82,10 +104,18 @@ public class ControllerLogin extends AbstractController implements Initializable
         }
         // Login de usuario
         else if(comboBox.getValue().equals("Usuario")) {
-            CuentaUsuario cuentaUsuario = banco.isUsuarioOnBanco(userField.getText());
+            CuentaUsuario cuentaUsuario;
+            try {
+                cuentaUsuario = banco.isUsuarioOnBanco(userField.getText());
+            }catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + userField.getText() + " no se eneucntra en el sistema.");
+                return;
+            } catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+                return;
+            }
             if(cuentaUsuario != null &&
                     cuentaUsuario.getPersona().contrasenaEquals(passwordField.getText())){
-                ControllerUser.setBanco(banco);
                 ControllerUser.setCuentaUsuario(cuentaUsuario);
                 getScreenController().activate("ScreenUsuario");
                 clearLabel();
@@ -135,10 +165,6 @@ public class ControllerLogin extends AbstractController implements Initializable
         comboBox.setValue("Usuario");
     }
 
-    public static void setBanco(Banco banco){
-        ControllerLogin.banco = banco;
-    }
-
     // Las funciones a contincuacion son temporales, es para facilitar el desarrollo de la aplicacion
     public void rellenarMario(ActionEvent event){
         userField.setText("17983727-7");
@@ -149,4 +175,19 @@ public class ControllerLogin extends AbstractController implements Initializable
         userField.setText("19267473-5");
         passwordField.setText("braulio123");
     }
+
+    private void generateDialog(String titulo, String cuerpo){
+        JFXDialogLayout contenido = new JFXDialogLayout();
+        contenido.setHeading(new Text(titulo));
+        contenido.setBody(new Text(cuerpo));
+        JFXDialog dialog = new JFXDialog(stackPane, contenido, JFXDialog.DialogTransition.CENTER);
+
+        JFXButton button = new JFXButton("Entendido");
+        button.setOnAction(event -> dialog.close());
+
+        contenido.setActions(button);
+
+        dialog.show();
+    }
+
 }

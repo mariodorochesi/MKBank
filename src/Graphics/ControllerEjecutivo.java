@@ -17,6 +17,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
+import system.excepciones.PersonaInexistente;
+import system.excepciones.RutInvalido;
 import system.general.Banco;
 import system.general.DineroPorCiudadYClientes;
 import system.general.Persona;
@@ -30,12 +32,14 @@ import system.systemAccounts.CuentaUsuario;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
 public class ControllerEjecutivo extends AbstractController implements Initializable {
+    
 
     // recursos de NewUser
     @FXML
@@ -178,7 +182,7 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
     private String rutBuscado;
     private ArrayList<String> reportLines;
     private static CuentaEjecutivo cuentaEjecutivo;
-    private static Banco banco;
+    private Banco banco = Banco.getInstance();
 
     /**
      * Inicializa lo necesario en la ventana para que funcione el ingresado
@@ -186,8 +190,9 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
      * @param location ubicacion de inicializado
      * @param resources recursos de inicializado
      */
+
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void initialize(URL location, ResourceBundle resources){
         System.out.println("Inicializando Controller");
         comboBox_estadoCivil.getItems().removeAll(comboBox_estadoCivil.getItems());
         comboBox_estadoCivil.getItems().addAll("Casada/o", "Separada/o", "Soltera/o");
@@ -228,13 +233,19 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
         final String genero; if(cb_hombre.isSelected()) genero = "Hombre"; else genero = "Mujer";
         final String sucursalAsociada = (String) comboBox_sucursalAsociada.getValue();
 
-
-        banco.agregarPersona(cuentaEjecutivo, nombres, apellidos, rut, ciudad, direccion, correo,
-                celular, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, 
-                (String) comboBox_cuentaBancariaInicial.getValue(), sucursalAsociada);
-
-        generateDialog("Completado", banco.getLastError() + tf_searchRut.getText());
-
+        try {
+            banco.agregarPersona(cuentaEjecutivo, nombres, apellidos, rut, ciudad, direccion, correo,
+                    celular, nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero,
+                    (String) comboBox_cuentaBancariaInicial.getValue(), sucursalAsociada);
+            generateDialog("Completado", banco.getLastError() + tf_searchRut.getText());
+        }catch(SQLException e){
+            generateDialog("Error" , "Problema al conectarse a la Base de Datos");
+        }catch (PersonaInexistente personaInexistente) {
+            generateDialog("Error", "El rut " + rut + " no se encuentra en el sistema.");
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
         resetAll(event);
     }
 
@@ -424,7 +435,16 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
     private boolean searchUser(String rut) {
         // Buscar en el sistema con el rut y retornar true si lo encuentra
         // Editar los valores de los text field con los datos encontrados
-        final CuentaUsuario cuentaUsuario = banco.isUsuarioOnBanco(rut);
+        final CuentaUsuario cuentaUsuario;
+        try {
+            cuentaUsuario = banco.isUsuarioOnBanco(rut);
+        }catch (PersonaInexistente personaInexistente) {
+            generateDialog("Error", "El rut " + rut + " no se encuentra en el sistema.");
+            return false;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return false;
+        }
         final boolean encontrado = cuentaUsuario != null;
         rutBuscado = rut;
         if(encontrado){
@@ -483,7 +503,16 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
      * todos los datos almacenados del usuario
      */
     public void modificarUsuario(){
-        Persona persona = banco.isPersonaOnBanco(rutBuscado);
+        Persona persona;
+        try {
+            persona = banco.isPersonaOnBanco(rutBuscado);
+        }catch (PersonaInexistente personaInexistente) {
+            generateDialog("Error", "El rut " + rutBuscado + " no se encuentra en el sistema.");
+            return;
+        } catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
         if(banco.getPermisos(cuentaEjecutivo.getPersona()) >= banco.getPermisos(persona)) {
             final String nombres = tf_nombres1.getText();
             final String apellidos = tf_apellidos1.getText();
@@ -501,8 +530,13 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
             final String genero; if(cb_hombre1.isSelected()) genero = "Hombre"; else genero = "Mujer";
             final String sucursalAsociada = (String) comboBox_sucursalAsociada1.getValue();
 
-            banco.editarPersona(persona, nombres, apellidos, rut, ciudad, direccion, correo, celular,
-                    nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursalAsociada);
+            try {
+
+                banco.editarPersona(persona, nombres, apellidos, rut, ciudad, direccion, correo, celular,
+                        nacionalidad, annoNacimiento, mesNacimiento, diaNacimiento, eCivil, genero, sucursalAsociada);
+            }catch (SQLException e){
+                generateDialog("Error", "Problemas al conectarse a la Base de Datos");
+            }
         }
         else {
             generateDialog("Error", "permisos insuficientes para modificar datos de "
@@ -516,12 +550,29 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
      * siempre y cuando no contenga dinero en alguna de sus cuentas bancarias.
      */
     public void eliminarPersona(){
-
+        Persona p;
         String rut = tf_searchRut.getText();
-        Persona p = banco.isPersonaOnBanco(rut);
+        try {
+            p = banco.isPersonaOnBanco(rut);
+        }catch (PersonaInexistente personaInexistente) {
+            generateDialog("Error", "El rut " + rut + " no se encuentra en el sistema.");
+            return;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
         if(p != null) {
-            banco.eliminarPersona(cuentaEjecutivo, rut);
-            generateDialog("Operacion Exitosa", p.getNombres() + " " + p.getApellidos() + " ha sido eliminado");
+
+            try {
+                banco.eliminarPersona(cuentaEjecutivo, rut);
+                generateDialog("Operacion Exitosa", p.getNombres() + " " + p.getApellidos() + " ha sido eliminado");
+            }catch (SQLException e){
+                generateDialog("Error", "Problemas al conectarse a la Base de Datos");
+            }catch (PersonaInexistente personaInexistente) {
+                generateDialog("Error", "El rut " + rut + " no se encuentra en el sistema.");
+            }catch (RutInvalido rutInvalido) {
+                generateDialog("Error", "Rut no valido");
+            }
         }
         else
             generateDialog("Error", "Usuario no encontrado con el rut indicado");
@@ -553,15 +604,6 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
         b_eliminarCuentaBancaria.setVisible(visible);
         b_eliminarPersona.setVisible(visible);
         comboBox_sucursalAsociada1.setVisible(visible);
-    }
-
-    /**
-     * **
-     * Metodo usado para actualizar la instancia de banco almacenada en la ventana de ejecutivos
-     * @param banco Instancia de banco que se va a usar a lo largo de la ejecucion del programa
-     */
-    public static void setBanco(Banco banco){
-        ControllerEjecutivo.banco = banco;
     }
 
     /**
@@ -640,8 +682,21 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
             generateDialog("Error", "Primero seleccione el tipo de cuenta bancaria que quiere crear");
             return;
         }
-        CuentaUsuario usuario = banco.isUsuarioOnBanco(rutBuscado);
-        banco.agregarCuentaBancaria(cuentaEjecutivo,usuario,(String)comboBox_nuevaCuentaBancaria.getValue());
+        CuentaUsuario usuario;
+        try{
+            usuario = banco.isUsuarioOnBanco(rutBuscado);
+        }catch (PersonaInexistente personaInexistente) {
+            generateDialog("Error", "El rut " + rutBuscado + " no se encuentra en el sistema.");
+            return;
+        } catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
+        try {
+            banco.agregarCuentaBancaria(cuentaEjecutivo, usuario, (String) comboBox_nuevaCuentaBancaria.getValue());
+        }catch (SQLException e){
+            generateDialog("Error", "Problemas al conectarse a la Base de Datos");
+        }
         updateTreeViewUserAccounts(usuario);
         updateComboBoxCuentasBancarias(usuario);
         generateDialog("Mensaje",banco.getLastError());
@@ -657,8 +712,23 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
             generateDialog("Error","Se tiene que seleccionar una cuenta bancaria para eliminar");
             return;
         }
-        CuentaUsuario usuario =  banco.isUsuarioOnBanco(rutBuscado);
-        banco.eliminarCuentaBancaria(cuentaEjecutivo,usuario,(Long) comboBox_cuentaBancariaEliminar.getValue());
+        CuentaUsuario usuario;
+        try {
+
+            usuario = banco.isUsuarioOnBanco(rutBuscado);
+        }catch (PersonaInexistente personaInexistente) {
+            generateDialog("Error", "El rut " + rutBuscado + " no se encuentra en el sistema.");
+            return;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
+        try {
+
+            banco.eliminarCuentaBancaria(cuentaEjecutivo, usuario, (Long) comboBox_cuentaBancariaEliminar.getValue());
+        }catch (SQLException e){
+            generateDialog("Error", "Problemas al conectarse a la Base de Datos");
+        }
         updateTreeViewUserAccounts(usuario);
         updateComboBoxCuentasBancarias(usuario);
         generateDialog("Mensaje",banco.getLastError());
@@ -698,11 +768,19 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
 
     /**
      * Realiza una busqueda para realizar un deposito o retiro de dinero
-     * @param event evento generado al precionar el boton de buscar
      */
     public void searchUserGiro(){
         rutBuscadoGiro = tf_searchRutGiro.getText();
-        CuentaUsuario cuentaUsuario = banco.isUsuarioOnBanco(rutBuscadoGiro);
+        CuentaUsuario cuentaUsuario;
+        try {
+            cuentaUsuario = banco.isUsuarioOnBanco(rutBuscadoGiro);
+        }catch (PersonaInexistente personaInexistente) {
+            generateDialog("Error", "El rut " + rutBuscadoGiro + " no se encuentra en el sistema.");
+            return;
+        }catch (RutInvalido rutInvalido) {
+            generateDialog("Error", "Rut no valido");
+            return;
+        }
 
         if(cuentaUsuario != null && cuentaUsuario.getPersona().getRut().equals(cuentaEjecutivo.getPersona().getRut())){
             generateDialog("Error", "No puede modiicar sus propios montos. Intentelo con otra persona");
@@ -758,9 +836,13 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
             generateDialog("Error", "Primero se tiene que seleccionar una cuenta bancaria");
             return;
         }
-        banco.depositarCuentaBancaria(cuentaEjecutivo, (Long) comboBox_cuentaBancariaGiro.getValue(),
-                monto);
-        generateDialog(" ", banco.getLastError());
+        try {
+            banco.depositarCuentaBancaria(cuentaEjecutivo, (Long) comboBox_cuentaBancariaGiro.getValue(),
+                    monto);
+            generateDialog(" ", banco.getLastError());
+        }catch (SQLException e){
+            generateDialog("Error", "Problemas al conectarse a la Base de Datos");
+        }
     }
 
     /**
@@ -773,9 +855,13 @@ public class ControllerEjecutivo extends AbstractController implements Initializ
             generateDialog("Error", "Primero se tiene que seleccionar una cuenta bancaria");
             return;
         }
-        banco.retirarCuentaBancaria(cuentaEjecutivo, (Long) comboBox_cuentaBancariaGiro.getValue(),
-                monto);
-        generateDialog(" ", banco.getLastError());
+        try {
+            banco.retirarCuentaBancaria(cuentaEjecutivo, (Long) comboBox_cuentaBancariaGiro.getValue(),
+                    monto);
+            generateDialog(" ", banco.getLastError());
+        }catch (SQLException e){
+            generateDialog("Error", "Problemas al conectarse a la Base de Datos");
+        }
     }
 
     /**
