@@ -19,6 +19,3 @@ Para cada uno de ellos, se diseñó una ventana con las cosas que realmente nece
 ## Autores
 * Mario Javier Dorochesi Ollino
 * Braulio Andres Lobo Madariaga
-* Katrina Elephteria Stamulis Vergara
-
-En desarrollo..
